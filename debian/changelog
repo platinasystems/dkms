@@ -1,9 +1,3 @@
-dkms (2.1.1.0-2~bpo50+1) lenny-backports; urgency=low
-
-  * Rebuild for lenny-backports.
-
- -- Jan Wagner <waja@cyconet.org>  Tue, 12 Jan 2010 20:51:41 +0100
-
 dkms (2.1.1.0-2) unstable; urgency=low
 
   * [8510207] Do not install upstart job file
