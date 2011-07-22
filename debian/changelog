@@ -1,9 +1,3 @@
-dkms (2.2.0.2-1~bpo60+1) squeeze-backports; urgency=low
-
-  * Squeeze backport.
-
- -- Robert Millan <rmh@debian.org>  Fri, 23 Sep 2011 22:58:21 +0200
-
 dkms (2.2.0.2-1) unstable; urgency=low
 
   [ Mario Limonciello ]
