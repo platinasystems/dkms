@@ -1,3 +1,11 @@
+dkms (2.1.1.2-5~bpo50+2) lenny-backports; urgency=low
+
+  * Adjust package to work with lenny mktemp
+    - Remove Depend on coreutils >= 7.4, it's not available on lenny
+    - fix debian/patches/use-system-tmpdir.patch
+
+ -- Jan Wagner <waja@cyconet.org>  Thu, 06 Oct 2011 15:28:31 +0200
+
 dkms (2.1.1.2-5~bpo50+1) lenny-backports; urgency=low
 
   * Rebuild for lenny-backports.
