@@ -1,3 +1,11 @@
+dkms (2.2.0.3-2.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add dkms-autopkgtest script from Ubuntu (Closes: #769095).
+  * Updated Standards-Version from 3.9.2 to 3.9.7.
+
+ -- Petter Reinholdtsen <pere@debian.org>  Sat, 23 Apr 2016 19:55:25 +0200
+
 dkms (2.2.0.3-2) unstable; urgency=low
 
   * [49fccbc] Depends on kmod | kldutils (Closes: #761728)
