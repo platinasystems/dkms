@@ -1,3 +1,17 @@
+dkms (2.2.0.3-3) unstable; urgency=medium
+
+  [ Petter Reinholdtsen ]
+  * Correct indentation of mkdeb in dkms(8) manual page. (Closes: #690865)
+  * Drop the unneeded quilt build dependency. (Closes: #728550)
+  * Added myself and Aron Xu as uploaders.
+
+  [ Aron Xu ]
+  * Added patches from Darik Horn and Ubuntu:
+    - Add support for BUILD_DEPENDS (Closes: #729015)
+    - Correct handling of POST_BUILD (Closes: #704989)
+
+ -- Petter Reinholdtsen <pere@debian.org>  Wed, 27 Apr 2016 10:20:15 +0200
+
 dkms (2.2.0.3-2.1) unstable; urgency=medium
 
   * Non-maintainer upload.

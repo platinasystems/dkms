@@ -3,3 +3,6 @@
 688904.patch
 757758.patch
 fix_have_one_kernel_for_non-zero_return_code.diff
+690865.patch
+1491729-0001-Add-POST_BUILD-to-the-dkms_conf_variables-list.patch
+1491729-0002-Add_BUILD_DEPENDS_configuration_option.patch
