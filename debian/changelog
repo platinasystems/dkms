@@ -1,3 +1,19 @@
+dkms (2.2.0.3-4~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Aron Xu <aron@debian.org>  Sun, 26 Jun 2016 03:58:35 +0800
+
+dkms (2.2.0.3-4) unstable; urgency=medium
+
+  * Acknowledge 2.2.0.3-2.1 NMU. (Closes: #822351)
+  * Make sure apport code write files in binary mode. (Closes: #684377)
+  * Build modules using all CPU cores. (Closes: #663114)
+  * Improve message printed when kernel headers are missing. (Closes: #690866)
+  * Add gbp.conf to ensure pristine-tar feature is used.
+
+ -- Petter Reinholdtsen <pere@debian.org>  Sun, 01 May 2016 15:27:22 +0200
+
 dkms (2.2.0.3-3) unstable; urgency=medium
 
   [ Petter Reinholdtsen ]
