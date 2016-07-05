@@ -1,5 +1,16 @@
---- a/dkms	2012-10-01 15:44:50.000000000 -0700
-+++ b/dkms	2012-10-01 15:44:25.981366657 -0700
+From: Dynamic Kernel Modules Support Team
+ <pkg-dkms-maint@lists.alioth.debian.org>
+Date: Wed, 6 Jul 2016 05:24:47 +0800
+Subject: 688904
+
+---
+ dkms | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/dkms b/dkms
+index c96cd8f..428943a 100644
+--- a/dkms
++++ b/dkms
 @@ -19,6 +19,7 @@
  #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  #
@@ -8,7 +19,7 @@
  
  # All of the variables we will accept from dkms.conf.
  # Does not include directives
-@@ -1827,7 +1831,7 @@
+@@ -1827,7 +1828,7 @@ module_status_built_extra() (
  # we do not get word splitting where it would be inconvienent.
  module_status_built() {
      local ret=1 directory ka k a state oifs="$IFS" IFS=''

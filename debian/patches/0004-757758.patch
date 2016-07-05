@@ -1,6 +1,17 @@
+From: Dynamic Kernel Modules Support Team
+ <pkg-dkms-maint@lists.alioth.debian.org>
+Date: Wed, 6 Jul 2016 05:24:47 +0800
+Subject: 757758
+
+---
+ dkms | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/dkms b/dkms
+index 428943a..9d24bd9 100644
 --- a/dkms
 +++ b/dkms
-@@ -761,16 +766,17 @@
+@@ -761,16 +761,17 @@ moduleconfig_update_obsoletes()
      # do all the changes at once, record the diffs for posterity
      for file in "$@"; do
  	[[ $file && -w $file ]] || continue

@@ -1,3 +1,22 @@
+dkms (2.2.0.3-5) unstable; urgency=medium
+
+  [ Aron Xu ]
+  * Remove obsolete virtual package 'linux-image' from Recommends (Closes: #724566)
+  * Do not ignore --kernelsourcedir (Closes: #653176)
+  * Update upstream link to github
+  * Use gbp-pq to manage patches
+
+  [ Daniel Kahn Gillmor ]
+  * Make dh_dkms name and version parsing more proper (Closes: #829123)
+
+  [ Dirk Griesbach ]
+  * Port apport hook to python3 and add python3-apport to Suggests (Closes: #707008)
+
+  [ Thijs Kinkhorst ]
+  * mkbmdeb: support for lean binary package with only the built modules (Closes: #554843)
+
+ -- Aron Xu <aron@debian.org>  Wed, 06 Jul 2016 05:51:37 +0800
+
 dkms (2.2.0.3-4) unstable; urgency=medium
 
   * Acknowledge 2.2.0.3-2.1 NMU. (Closes: #822351)

@@ -1,15 +1,17 @@
-Description: Build in parallell by default.
- Build using 'make -j#' where # is based on the number of CPU cores available.
- Patch was updated by Aron Xu <aron@debian.org>.
-Author: Andras Korn <korn-debbugs@elan.rulez.org>
-Bug-Debian: https://bugs.debian.org/663114
-Origin: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=663114
-Forwarded: no
-Reviewed-By: Petter Reinholdtsen <pere@hungry.com>
-Last-Update: 2016-05-01
+From: Dynamic Kernel Modules Support Team
+ <pkg-dkms-maint@lists.alioth.debian.org>
+Date: Wed, 6 Jul 2016 05:24:48 +0800
+Subject: parallell-build
 
---- dkms-2.2.0.3.orig/dkms
-+++ dkms-2.2.0.3/dkms
+---
+ dkms   | 28 ++++++++++++++++++++++++----
+ dkms.8 |  9 +++++++++
+ 2 files changed, 33 insertions(+), 4 deletions(-)
+
+diff --git a/dkms b/dkms
+index 2335f4a..3b82975 100644
+--- a/dkms
++++ b/dkms
 @@ -127,6 +127,7 @@ show_usage()
      echo $"              [--kernelsourcedir=source-location] [--no-prepare-kernel] [--no-initrd]"
      echo $"              [--binaries-only] [--source-only] [-r release (SuSE)] [--verbose]"
@@ -88,9 +90,11 @@ Last-Update: 2016-05-01
  # Run the specified action
  for action_to_run in $action; do
      setup_kernels_arches "$action_to_run"
---- dkms-2.2.0.3.orig/dkms.8
-+++ dkms-2.2.0.3/dkms.8
-@@ -515,6 +515,15 @@ prior than DKMS 2.1.  This option curren
+diff --git a/dkms.8 b/dkms.8
+index 556703d..0346a6d 100644
+--- a/dkms.8
++++ b/dkms.8
+@@ -515,6 +515,15 @@ prior than DKMS 2.1.  This option currently defaults to 1.
  A supplemental configuration file to the system-wide dkms framework, typically located
  in /etc/dkms/framework.conf.  All option that are normally provided on a command line
  can be provided in this file.

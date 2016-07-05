@@ -13,11 +13,15 @@ Where ZFS fails to build if SPL is not already installed.
 
 Signed-off-by: Darik Horn <dajhorn@vanadac.com>
 Signed-off-by: Brian Behlendorf <behlendorf1@llnl.gov>
+---
+ dkms   | 70 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------
+ dkms.8 |  8 ++++++++
+ 2 files changed, 68 insertions(+), 10 deletions(-)
 
-Index: dkms/dkms
-===================================================================
---- dkms.orig/dkms
-+++ dkms/dkms
+diff --git a/dkms b/dkms
+index c49a848..2335f4a 100644
+--- a/dkms
++++ b/dkms
 @@ -25,7 +25,7 @@ shopt -s extglob
  # Does not include directives
  readonly dkms_conf_variables="CLEAN REMAKE_INITRD remake_initrd PACKAGE_NAME
@@ -125,10 +129,10 @@ Index: dkms/dkms
  }
  
  function make_redhat3_driver_disk ()
-Index: dkms/dkms.8
-===================================================================
---- dkms.orig/dkms.8
-+++ dkms/dkms.8
+diff --git a/dkms.8 b/dkms.8
+index 811eb88..556703d 100644
+--- a/dkms.8
++++ b/dkms.8
 @@ -824,6 +824,14 @@ on
  .B dkms_autoinstaller
  for more information.

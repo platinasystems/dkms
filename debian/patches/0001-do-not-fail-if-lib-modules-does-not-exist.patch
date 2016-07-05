@@ -1,6 +1,10 @@
 From: Andreas Beckmann <debian@abeckmann.de>
+Date: Wed, 6 Jul 2016 05:24:47 +0800
 Subject: do not fail if /lib/modules does not exist
-Bug-Debian: http://bugs.debian.org/666023
+
+---
+ dkms_common.postinst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dkms_common.postinst b/dkms_common.postinst
 index d8cf3a7..0c8cfc1 100644

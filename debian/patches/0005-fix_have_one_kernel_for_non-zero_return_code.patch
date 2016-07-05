@@ -1,11 +1,17 @@
-Description: Fixes function have_one_kernel in dkms script for non-zero return code
-Author: Mario Limonciello <Mario_Limonciello@Dell.com>
-Origin: upstream
-Bug-Ubuntu: https://bugs.launchpad.net/bugs/1261116
+From: Dynamic Kernel Modules Support Team
+ <pkg-dkms-maint@lists.alioth.debian.org>
+Date: Wed, 6 Jul 2016 05:24:47 +0800
+Subject: fix_have_one_kernel_for_non-zero_return_code
 
+---
+ dkms | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/dkms b/dkms
+index 9d24bd9..5f2b5ea 100644
 --- a/dkms
 +++ b/dkms
-@@ -163,11 +163,14 @@
+@@ -163,11 +163,14 @@ set_kernel_source_dir()
  
  # A little test function for DKMS commands that only work on one kernel.
  have_one_kernel() {

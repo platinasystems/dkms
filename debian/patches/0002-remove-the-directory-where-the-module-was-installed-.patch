@@ -1,9 +1,12 @@
 From: Andreas Beckmann <debian@abeckmann.de>
-Subject: remove the directory where the module was installed
- after removing a module try to remove the path (below
- /lib/modules/KVERS) were the module was installed to cleanup any
- remaining empty directories
-Bug-Debian: http://bugs.debian.org/657145
+Date: Wed, 6 Jul 2016 05:24:47 +0800
+Subject: remove the directory where the module was installed after removing a
+ module try to remove the path (below /lib/modules/KVERS) were the module was
+ installed to cleanup any remaining empty directories
+
+---
+ dkms | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/dkms b/dkms
 index 042acc0..c96cd8f 100644

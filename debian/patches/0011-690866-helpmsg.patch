@@ -1,13 +1,17 @@
-Description: Improve message printed when kernel headers are missing.
-Author: Thijs Kinkhorst <thijs@debian.org>
-Bug-Debian: https://bugs.debian.org/690866
-Origin: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=690866
-Forwarded: no
-Reviewed-By: Petter Reinholdtsen <pere@hungry.com>
-Last-Update: 2016-05-01
+From: Dynamic Kernel Modules Support Team
+ <pkg-dkms-maint@lists.alioth.debian.org>
+Date: Wed, 6 Jul 2016 05:24:48 +0800
+Subject: 690866-helpmsg
 
---- dkms-2.2.0.3.orig/dkms_common.postinst
-+++ dkms-2.2.0.3/dkms_common.postinst
+---
+ dkms_common.postinst | 2 +-
+ sample.spec          | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dkms_common.postinst b/dkms_common.postinst
+index 0c8cfc1..f0db448 100644
+--- a/dkms_common.postinst
++++ b/dkms_common.postinst
 @@ -282,7 +282,7 @@ for KERNEL in $KERNELS; do
              dkms_status=`dkms status -m $NAME -v $VERSION -k $KERNEL $ARCH`
          else
@@ -17,8 +21,10 @@ Last-Update: 2016-05-01
          fi
      fi
  
---- dkms-2.2.0.3.orig/sample.spec
-+++ dkms-2.2.0.3/sample.spec
+diff --git a/sample.spec b/sample.spec
+index ff8421f..3abdf07 100644
+--- a/sample.spec
++++ b/sample.spec
 @@ -93,7 +93,7 @@ if [ -z "$loaded_tarballs" ]; then
  	else
  		echo -e ""

@@ -9,7 +9,7 @@ Uploaders: David Paleino <dapal@debian.org>,
  Giuseppe Iuculano <iuculano@debian.org>
 Build-Depends: debhelper (>= 7.0.50~)
 Standards-Version: 3.9.7
-Homepage: http://linux.dell.com/dkms
+Homepage: https://github.com/dell-oss/dkms
 Vcs-Git: git://git.debian.org/pkg-dkms/dkms.git
 Vcs-Browser: http://git.debian.org/?p=pkg-dkms/dkms.git
 
@@ -24,8 +24,8 @@ Depends: ${misc:Depends},
  patch
 Recommends: fakeroot,
  menu | sudo,
- linux-headers-686-pae | linux-headers-amd64 | linux-headers-generic | linux-headers,
- linux-image
+ linux-headers-686-pae | linux-headers-amd64 | linux-headers-generic | linux-headers
+Suggests: python3-apport
 Description: Dynamic Kernel Module Support Framework
  DKMS is a framework designed to allow individual kernel modules to be upgraded
  without changing the whole kernel. It is also very easy to rebuild modules as
