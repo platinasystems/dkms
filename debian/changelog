@@ -1,9 +1,3 @@
-dkms (2.2.1.0+git20160527-1~bpo8+1) jessie-backports; urgency=medium
-
-  * Rebuild for jessie-backports.
-
- -- Aron Xu <aron@debian.org>  Fri, 21 Oct 2016 14:24:20 +0800
-
 dkms (2.2.1.0+git20160527-1) unstable; urgency=medium
 
   * Rebase to upstream commit eb402f72b9a71ccdd0d3610db8570195eb048f1f
