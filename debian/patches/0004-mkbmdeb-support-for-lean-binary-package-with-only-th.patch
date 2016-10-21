@@ -10,7 +10,7 @@ Subject: mkbmdeb: support for lean binary package with only the built modules
 Bug-Debian: http://bugs.debian.org/554843
 ---
  Makefile                                   |  4 +++
- dkms                                       | 19 ++++++++--
+ dkms                                       | 21 +++++++++--
  dkms.8                                     | 12 +++++++
  template-dkms-mkbmdeb/Makefile             | 18 ++++++++++
  template-dkms-mkbmdeb/debian/README.Debian |  5 +++
@@ -19,7 +19,7 @@ Bug-Debian: http://bugs.debian.org/554843
  template-dkms-mkbmdeb/debian/control       | 13 +++++++
  template-dkms-mkbmdeb/debian/copyright     |  2 ++
  template-dkms-mkbmdeb/debian/rules         | 57 ++++++++++++++++++++++++++++++
- 10 files changed, 134 insertions(+), 3 deletions(-)
+ 10 files changed, 136 insertions(+), 3 deletions(-)
  create mode 100644 template-dkms-mkbmdeb/Makefile
  create mode 100644 template-dkms-mkbmdeb/debian/README.Debian
  create mode 100644 template-dkms-mkbmdeb/debian/changelog
@@ -28,11 +28,11 @@ Bug-Debian: http://bugs.debian.org/554843
  create mode 100644 template-dkms-mkbmdeb/debian/copyright
  create mode 100644 template-dkms-mkbmdeb/debian/rules
 
-diff --git a/Makefile b/Makefile
-index c64332e..2dc9cf8 100644
---- a/Makefile
-+++ b/Makefile
-@@ -81,6 +81,10 @@ install-debian: install install-doc
+Index: dkms/Makefile
+===================================================================
+--- dkms.orig/Makefile
++++ dkms/Makefile
+@@ -90,6 +90,10 @@ install-debian: install install-doc
  	chmod +x $(ETC)/template-dkms-mkdeb/debian/postinst
  	chmod +x $(ETC)/template-dkms-mkdeb/debian/prerm
  	chmod +x $(ETC)/template-dkms-mkdeb/debian/rules
@@ -43,11 +43,11 @@ index c64332e..2dc9cf8 100644
  	rm $(DOCDIR)/COPYING*
  	rm $(DOCDIR)/sample*
  
-diff --git a/dkms b/dkms
-index bde0e27..0bc7766 100644
---- a/dkms
-+++ b/dkms
-@@ -122,7 +122,7 @@ show_usage()
+Index: dkms/dkms
+===================================================================
+--- dkms.orig/dkms
++++ dkms/dkms
+@@ -125,7 +125,7 @@ show_usage()
  {
      echo $"Usage: $0 [action] [options]"
      echo $"  [action]  = { add | remove | build | install | uninstall | match | autoinstall"
@@ -56,16 +56,16 @@ index bde0e27..0bc7766 100644
      echo $"  [options] = [-m module] [-v module-version] [-k kernel-version] [-a arch]"
      echo $"              [-d distro] [-c dkms.conf-location] [-q] [--force] [--all]"
      echo $"              [--templatekernel=kernel] [--directive='cli-directive=cli-value']"
-@@ -2829,6 +2829,8 @@ preproc_file()
+@@ -2973,6 +2973,8 @@ preproc_file()
      local date_str="$(date -R)"
      echo "modifying $1..."
      sed -e "s/DEBIAN_PACKAGE/$debian_package/g" \
 +	-e "s/DEBIAN_BUILD_ARCH/$debian_build_arch/g" \
 +	-e "s/KERNEL_VERSION/$kernelver/g" \
- 	-e "s/MODULE_NAME/$module/g" \
- 	-e "s/MODULE_VERSION/$module_version/g" \
- 	-e "s/DATE_STAMP/$date_str/" "$1" > "$1.dkms-pp"
-@@ -2885,6 +2887,7 @@ make_debian()
+         -e "s/MODULE_NAME/$module/g" \
+         -e "s/MODULE_VERSION/$module_version/g" \
+         -e "s/DATE_STAMP/$date_str/" "$1" > "$1.dkms-pp"
+@@ -3035,6 +3037,7 @@ make_debian()
      make_common_test "mk${create_type}"
  
      debian_package=${module//_/-}
@@ -73,46 +73,48 @@ index bde0e27..0bc7766 100644
  
      # Read the conf file
      read_conf_or_die "$kernelver" "$arch"
-@@ -2957,7 +2960,16 @@ make_debian()
- 		die 7 $"There was a problem creating your ${create_type}."
- 	    echo $""
- 	    echo $"DKMS: mk${create_type} completed."
--	    invoke_command "mv '$temp_dir/${debian_package}-dkms_${module_version}_all.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
-+	    invoke_command "mv '$temp_dir/${debian_package}-dkms_${module_version}_${debian_build_arch}.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
-+	    ;;
-+	bmdeb)
-+            export KVER="$kernelver"
-+            export KARCH="$arch"
-+	    invoke_command "dpkg-buildpackage -rfakeroot -d -b -us -uc 1>/dev/null" "Building binary package" || \
-+		die 7 $"There was a problem creating your ${create_type}."
-+	    echo $""
-+	    echo $"DKMS: mk${create_type} completed."
-+	    invoke_command "mv '$temp_dir/${debian_package}-dkms-bin_${module_version}_${debian_build_arch}.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
- 	    ;;
+@@ -3107,7 +3110,16 @@ make_debian()
+             die 7 $"There was a problem creating your ${create_type}."
+         echo $""
+         echo $"DKMS: mk${create_type} completed."
+-        invoke_command "mv '$temp_dir/${debian_package}-dkms_${module_version}_all.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
++	invoke_command "mv '$temp_dir/${debian_package}-dkms_${module_version}_${debian_build_arch}.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
++	;;
++    bmdeb)
++	export KVER="$kernelver"
++	export KARCH="$arch"
++	invoke_command "dpkg-buildpackage -rfakeroot -d -b -us -uc 1>/dev/null" "Building binary package" || \
++	    die 7 $"There was a problem creating your ${create_type}."
++	echo $""
++	echo $"DKMS: mk${create_type} completed."
++	invoke_command "mv '$temp_dir/${debian_package}-dkms-bin_${module_version}_${debian_build_arch}.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
+         ;;
      esac
      popd > /dev/null 2>&1
-@@ -3467,7 +3479,7 @@ die_is_fatal="yes"
- [ -x /sbin/weak-modules ] && weak_modules='/sbin/weak-modules'
+@@ -3634,7 +3646,7 @@ die_is_fatal="yes"
  [ -x /usr/lib/module-init-tools/weak-modules ] && weak_modules='/usr/lib/module-init-tools/weak-modules'
+ no_depmod=""
  
 -action_re='^(remove|(auto|un)?install|match|mk(driverdisk|tarball|rpm|deb|dsc|kmp)|build|add|status|ldtarball)$'
 +action_re='^(remove|(auto|un)?install|match|mk(driverdisk|tarball|rpm|deb|bmdeb|dsc|kmp)|build|add|status|ldtarball)$'
  
  # Parse command line arguments
  while (($# > 0)); do
-@@ -3583,6 +3595,7 @@ for action_to_run in $action; do
- 	mktarball)    make_tarball;;
- 	mkrpm)        make_rpm;;
- 	mkdeb)        make_debian "deb";;
-+	mkbmdeb)      make_debian "bmdeb";;
- 	mkdsc)        make_debian "dsc";;
- 	mkkmp)        have_one_kernel && make_kmp;;
- 	status)       show_status;;
-diff --git a/dkms.8 b/dkms.8
-index 0346a6d..80838ad 100644
---- a/dkms.8
-+++ b/dkms.8
-@@ -261,6 +261,18 @@ load this tarball, build and install modules on the end user's system.  If you d
+@@ -3860,6 +3872,9 @@ for action_to_run in $action; do
+     mkdeb)
+         make_debian "deb"
+         ;;
++    mkbmdeb)
++        make_debian "bmdeb"
++        ;;
+     mkdsc)
+         make_debian "dsc"
+         ;;
+Index: dkms/dkms.8
+===================================================================
+--- dkms.orig/dkms.8
++++ dkms/dkms.8
+@@ -299,6 +299,18 @@ load this tarball, build and install mod
  not want your debian package to contain any prebuilt binaries, be sure to specify
  .B \-\-source\-only
  in the mkdeb command.
@@ -131,11 +133,10 @@ index 0346a6d..80838ad 100644
  .SY mkdsc
  .OP module/module\-version
  .OP -k kernel/arch
-diff --git a/template-dkms-mkbmdeb/Makefile b/template-dkms-mkbmdeb/Makefile
-new file mode 100644
-index 0000000..210b998
+Index: dkms/template-dkms-mkbmdeb/Makefile
+===================================================================
 --- /dev/null
-+++ b/template-dkms-mkbmdeb/Makefile
++++ dkms/template-dkms-mkbmdeb/Makefile
 @@ -0,0 +1,18 @@
 +#/usr/bin/make
 +SRC = $(DESTDIR)/usr/src
@@ -155,22 +156,20 @@ index 0000000..210b998
 +	rm -rf dkms_main_tree/ dkms_binaries_only/
 +endif
 +
-diff --git a/template-dkms-mkbmdeb/debian/README.Debian b/template-dkms-mkbmdeb/debian/README.Debian
-new file mode 100644
-index 0000000..f8495d9
+Index: dkms/template-dkms-mkbmdeb/debian/README.Debian
+===================================================================
 --- /dev/null
-+++ b/template-dkms-mkbmdeb/debian/README.Debian
++++ dkms/template-dkms-mkbmdeb/debian/README.Debian
 @@ -0,0 +1,5 @@
 +MODULE_NAME DKMS module for Debian
 +
 +This package was automatically generated by the DKMS system,
 +for distribution on Debian based operating systems.
 +
-diff --git a/template-dkms-mkbmdeb/debian/changelog b/template-dkms-mkbmdeb/debian/changelog
-new file mode 100644
-index 0000000..b6cc91d
+Index: dkms/template-dkms-mkbmdeb/debian/changelog
+===================================================================
 --- /dev/null
-+++ b/template-dkms-mkbmdeb/debian/changelog
++++ dkms/template-dkms-mkbmdeb/debian/changelog
 @@ -0,0 +1,6 @@
 +DEBIAN_PACKAGE-dkms-bin (MODULE_VERSION) stable; urgency=low
 +
@@ -178,18 +177,16 @@ index 0000000..b6cc91d
 +
 + -- Dynamic Kernel Modules Support Team <pkg-dkms-maint@lists.alioth.debian.org>  DATE_STAMP
 +
-diff --git a/template-dkms-mkbmdeb/debian/compat b/template-dkms-mkbmdeb/debian/compat
-new file mode 100644
-index 0000000..7f8f011
+Index: dkms/template-dkms-mkbmdeb/debian/compat
+===================================================================
 --- /dev/null
-+++ b/template-dkms-mkbmdeb/debian/compat
++++ dkms/template-dkms-mkbmdeb/debian/compat
 @@ -0,0 +1 @@
 +7
-diff --git a/template-dkms-mkbmdeb/debian/control b/template-dkms-mkbmdeb/debian/control
-new file mode 100644
-index 0000000..05fdeaf
+Index: dkms/template-dkms-mkbmdeb/debian/control
+===================================================================
 --- /dev/null
-+++ b/template-dkms-mkbmdeb/debian/control
++++ dkms/template-dkms-mkbmdeb/debian/control
 @@ -0,0 +1,13 @@
 +Source: DEBIAN_PACKAGE-dkms-bin
 +Section: misc
@@ -204,19 +201,17 @@ index 0000000..05fdeaf
 +Description: DEBIAN_PACKAGE binary drivers for linux-image-KERNEL_VERSION
 + This package contains DEBIAN_PACKAGE drivers for the KERNEL_VERSION Linux kernel,
 + built from DEBIAN_PACKAGE-dkms for the DEBIAN_BUILD_ARCH architecture.
-diff --git a/template-dkms-mkbmdeb/debian/copyright b/template-dkms-mkbmdeb/debian/copyright
-new file mode 100644
-index 0000000..ad983f3
+Index: dkms/template-dkms-mkbmdeb/debian/copyright
+===================================================================
 --- /dev/null
-+++ b/template-dkms-mkbmdeb/debian/copyright
++++ dkms/template-dkms-mkbmdeb/debian/copyright
 @@ -0,0 +1,2 @@
 +
 +This copyright has not been completed by the author of this package.
-diff --git a/template-dkms-mkbmdeb/debian/rules b/template-dkms-mkbmdeb/debian/rules
-new file mode 100644
-index 0000000..b931f5e
+Index: dkms/template-dkms-mkbmdeb/debian/rules
+===================================================================
 --- /dev/null
-+++ b/template-dkms-mkbmdeb/debian/rules
++++ dkms/template-dkms-mkbmdeb/debian/rules
 @@ -0,0 +1,57 @@
 +#!/usr/bin/make -f
 +# -*- makefile -*-

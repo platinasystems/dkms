@@ -1,4 +1,42 @@
 .\" -*- nroff -*-
+.\"
+.\" .SY, .YS, .OP macros from /usr/share/groff/1.21/tmac/an-ext.tmac
+.\"
+.\" Declare start of command synopsis.  Sets up hanging indentation.
+.de SY
+.  ie !\\n(mS \{\
+.    nh
+.    nr mS 1
+.    nr mA \\n(.j
+.    ad l
+.    nr mI \\n(.i
+.  \}
+.  el \{\
+.    br
+.    ns
+.  \}
+.
+.  HP \w'\fB\\$1\fP\ 'u
+.  B "\\$1"
+..
+.
+.
+.\" End of command synopsis.  Restores adjustment.
+.de YS
+.  in \\n(mIu
+.  ad \\n(mA
+.  hy \\n(HY
+.  nr mS 0
+..
+.
+.
+.\" Declare optional option.
+.de OP
+.  ie \\n(.$-1 \
+.    RI "[\fB\\$1\fP" "\ \\$2" "]"
+.  el \
+.    RB "[" "\\$1" "]"
+..
 .TH DKMS 8 "June 2008" "Version 2.0.20"
 .SH NAME
 dkms \- Dynamic Kernel Module Support
@@ -243,7 +281,6 @@ load this tarball, build and install modules on the end user's system.  If you d
 not want your RPM to contain any prebuilt binaries, be sure to specify
 .B \-\-source\-only
 in the mkrpm command.
-.TP
 .SY mkdeb
 .OP module/module\-version
 .OP -k kernel/arch
@@ -464,6 +501,13 @@ ensure that modules are compiled correctly.
 This option keeps DKMS from cleaning your kernel source tree after a
 build.
 .TP
+.B \-\-no\-depmod
+This option prevents DKMS from running the depmod command during
+.B install
+and
+.B uninstall
+which will avoid (re)calculating module dependencies and thereby save time.
+.TP
 .B \-\-kernelsourcedir <kernel\-source\-directory\-location>
 Using this option you can specify the location of your kernel source
 directory.  Most likely you will not need to set this if your kernel
@@ -516,6 +560,15 @@ prior than DKMS 2.1.  This option currently defaults to 1.
 A supplemental configuration file to the system-wide dkms framework, typically located
 in /etc/dkms/framework.conf.  All option that are normally provided on a command line
 can be provided in this file.
+.TP
+.B \-j number
+Run no more than
+.I number
+jobs in parallel; see the -j option of
+.I make(1).
+Defaults to the number of CPUs in the system, detected by
+.I nproc(1).
+Specify 0 to impose no limit on the number of parallel jobs.
 .SH ORIGINAL MODULES
 During the first install of a module for a <kernelversion>,
 .B dkms
@@ -720,6 +773,7 @@ array directive.
 .B STRIP[#]=
 By default strip is considered to be "yes".  If set to "no", DKMS will not
 run strip \-g against your built module to remove debug symbols from it.
+STRIP[0] is used as the default for any unset entries in the STRIP array.
 .TP
 .B PACKAGE_NAME=
 This directive is used to give the name associated with the entire package of modules.  This is the same
@@ -825,6 +879,14 @@ on
 .B dkms_autoinstaller
 for more information.
 .TP
+.B BUILD_DEPENDS[#]=
+This optional directive is an array that allows you to specify other modules as
+dependencies for your module. Each array element should be the
+.B PACKAGE_NAME
+of another module that is managed by dkms. Do not specify a version or
+architecture in the dependency. Note that this directive is only advisory;
+missing or broken dependencies cause non-fatal warnings.
+.TP
 .B BUILD_EXCLUSIVE_KERNEL=
 This optional directive allows you to specify a regular expression which defines
 the subset of kernels which DKMS is allowed to build your module for.  If the kernel
@@ -924,9 +986,18 @@ default values for the variables.
 .B $source_tree
 and
 .B $install_tree
-which control where DKMS looks for its framework.  Note that these variables can also
-be manipulated on the command line with \-\-dkmstree, \-\-sourcetree
-and \-\-installtree options.
+which control where DKMS looks for its framework.  The 
+.B $symlink_modules
+variable controls wheter binary modules are copied to /lib/modules or if only symlinks are
+created there. Note that these variables can also
+be manipulated on the command line with \-\-dkmstree, \-\-sourcetree, \-\-installtree 
+and \-\-symlink-modules options.
+
+The
+.B $autoinstall_all_kernels
+variable is used by the common postinst for DKMS modules. It controls if the build should be done
+for all installed kernels or only for the current and latest installed kernel. It has no command 
+line equivalent.
 .SH dkms_autoinstaller
 This boot\-time service automatically installs any module which has
 .B AUTOINSTALL="yes"
@@ -1064,7 +1135,7 @@ works within the DKMS framework.
 .SH AUTHOR
 Gary Lerhaupt
 .SH WEBPAGE
-.I http://linux.dell.com/dkms
+.I https://github.com/dell-oss/dkms
 .SH WHITE\-PAPERS
 .I http://linux.dell.com/dkms/dkms\-ols2004.pdf
 

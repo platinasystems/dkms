@@ -7,11 +7,11 @@ Subject: Do not ignore --kernelsourcedir
  dkms | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/dkms b/dkms
-index 3b82975..bde0e27 100644
---- a/dkms
-+++ b/dkms
-@@ -48,6 +48,9 @@ _get_kernel_dir() {
+Index: dkms/dkms
+===================================================================
+--- dkms.orig/dkms
++++ dkms/dkms
+@@ -49,6 +49,9 @@ _get_kernel_dir() {
         Linux)          DIR="/lib/modules/$KVER/build" ;;
         GNU/kFreeBSD)   DIR="/usr/src/kfreebsd-headers-$KVER/sys" ;;
      esac
