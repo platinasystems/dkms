@@ -1,3 +1,19 @@
+dkms (2.3-1) unstable; urgency=medium
+
+  [ Adel Belhouane ]
+  * Update mkbmdeb behavior (Closes: #830670)
+
+  [ Aron Xu ]
+  * Downgrade menu from Recommends to Suggests (Closes: #744054)
+  * Imported Upstream version 2.3
+  * Upstream post-release cherry-picks
+  * d/compat: 7 -> 9
+
+  [ D. Jared Dominguez ]
+  * update URLs
+
+ -- Aron Xu <aron@debian.org>  Wed, 26 Oct 2016 14:26:44 +0800
+
 dkms (2.2.1.0+git20160527-1) unstable; urgency=medium
 
   * Rebase to upstream commit eb402f72b9a71ccdd0d3610db8570195eb048f1f

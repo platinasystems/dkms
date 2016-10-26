@@ -2,3 +2,6 @@
 0002-757758.patch
 0003-Do-not-ignore-kernelsourcedir.patch
 0004-mkbmdeb-support-for-lean-binary-package-with-only-th.patch
+0005-Fix-warning-messages-to-start-Warning-instead-of.patch
+0006-invoke_command-Avoid-leaking-a-sleep-process.patch
+0007-Only-report-fully-linked-weak-installations.patch
