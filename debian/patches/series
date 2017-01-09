@@ -5,3 +5,5 @@
 0005-Fix-warning-messages-to-start-Warning-instead-of.patch
 0006-invoke_command-Avoid-leaking-a-sleep-process.patch
 0007-Only-report-fully-linked-weak-installations.patch
+0008-Don-t-assume-boot-config-exists-test-first.patch
+0009-Add-support-for-UEFI-Secure-Boot-validation-toggling.patch

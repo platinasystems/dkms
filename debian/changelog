@@ -1,3 +1,20 @@
+dkms (2.3-2~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Aron Xu <aron@debian.org>  Mon, 09 Jan 2017 05:08:03 +0000
+
+dkms (2.3-2) unstable; urgency=medium
+
+  [ Adam Cornad ]
+  * Don't assume /boot/config-* exists, test first.
+
+  [ Aron Xu ]
+  * d/control: update VCS-*, std-ver: 3.9.8
+  * d/rules: add shim support for Ubuntu derivatives
+
+ -- Aron Xu <aron@debian.org>  Wed, 28 Dec 2016 19:57:32 +0800
+
 dkms (2.3-1) unstable; urgency=medium
 
   [ Adel Belhouane ]
