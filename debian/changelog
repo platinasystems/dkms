@@ -1,9 +1,3 @@
-dkms (2.6.1-1~bpo9+1) stretch-backports; urgency=medium
-
-  * Rebuild for stretch-backports.
-
- -- Aron Xu <aron@debian.org>  Mon, 05 Nov 2018 09:27:53 +0000
-
 dkms (2.6.1-1) unstable; urgency=medium
 
   [ Petter Reinholdtsen ]
