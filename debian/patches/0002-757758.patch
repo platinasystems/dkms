@@ -7,10 +7,10 @@ Subject: 757758
  dkms | 13 +++++++------
  1 file changed, 7 insertions(+), 6 deletions(-)
 
-Index: dkms/dkms
-===================================================================
---- dkms.orig/dkms
-+++ dkms/dkms
+diff --git a/dkms b/dkms
+index c90fd43..24a99fc 100644
+--- a/dkms
++++ b/dkms
 @@ -1,7 +1,7 @@
  #!/bin/bash
  #
@@ -20,7 +20,7 @@ Index: dkms/dkms
  #  by Gary Lerhaupt, Matt Domsch, & Mario Limonciello
  #  Copyright (C) 2012 by Darik Horn <dajhorn@vanadac.com>
  #
-@@ -829,16 +829,17 @@ moduleconfig_update_obsoletes()
+@@ -864,16 +864,17 @@ moduleconfig_update_obsoletes()
      # Do all the changes at once, record the diffs for posterity
      for file in "$@"; do
          [[ $file && -w $file ]] || continue

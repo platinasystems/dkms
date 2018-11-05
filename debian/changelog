@@ -1,3 +1,24 @@
+dkms (2.6.1-1~bpo9+1) stretch-backports; urgency=medium
+
+  * Rebuild for stretch-backports.
+
+ -- Aron Xu <aron@debian.org>  Mon, 05 Nov 2018 09:27:53 +0000
+
+dkms (2.6.1-1) unstable; urgency=medium
+
+  [ Petter Reinholdtsen ]
+  * Remove Giuseppe Iuculano as uploader on request from the MIA team.
+    (Closes: #866839)
+
+  [ Aron Xu ]
+  * New upstream version 2.6.1
+  * Drop patches not used
+  * Use @tracker.d.o address
+  * Use salsa.d.o Git URLs
+  * Set std-ver to 4.1.4
+
+ -- Aron Xu <aron@debian.org>  Sun, 05 Aug 2018 01:52:35 +0800
+
 dkms (2.3-3) unstable; urgency=medium
 
   * Upstream post-2.3 cherry-picks for apport (LP: #1661843)

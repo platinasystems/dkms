@@ -7,14 +7,14 @@ Subject: Don't assume /boot/config-* exists, test first.
  1 file changed, 1 insertion(+)
 
 diff --git a/dkms_common.postinst b/dkms_common.postinst
-index d3d2829..d2ac712 100644
+index 5102005..79de370 100644
 --- a/dkms_common.postinst
 +++ b/dkms_common.postinst
-@@ -53,6 +53,7 @@ _get_newest_kernel_debian() {
-     NEWEST_ABI=
+@@ -33,6 +33,7 @@ _is_kernel_name_correct() {
+     KERNEL_NAME=$1
  
      for kernel in /boot/config-*; do
 +        [ -f "$kernel" ] || continue
          KERNEL=${kernel#*-}
-         KERNEL_VERSION=${KERNEL%%-*}
-         ABI=${KERNEL#*-}
+         if [ "${KERNEL}" = "${KERNEL_NAME}" ]; then
+             CORRECT="yes"

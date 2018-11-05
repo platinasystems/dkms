@@ -7,10 +7,10 @@ Subject: 688904
  dkms | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: dkms/dkms
-===================================================================
---- dkms.orig/dkms
-+++ dkms/dkms
+diff --git a/dkms b/dkms
+index be00118..c90fd43 100644
+--- a/dkms
++++ b/dkms
 @@ -20,6 +20,7 @@
  #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  #
@@ -19,7 +19,7 @@ Index: dkms/dkms
  
  # All of the variables we will accept from dkms.conf.
  # Does not include directives
-@@ -1941,7 +1942,7 @@ module_status_built_extra() (
+@@ -2007,7 +2008,7 @@ module_status_built_extra() (
  # we do not get word splitting where it would be inconvienent.
  module_status_built() {
      local ret=1 directory ka k a state oifs="$IFS" IFS=''

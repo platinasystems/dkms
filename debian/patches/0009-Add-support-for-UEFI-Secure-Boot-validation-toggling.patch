@@ -14,7 +14,7 @@ dkms drivers that were added).
  1 file changed, 3 insertions(+)
 
 diff --git a/dkms_common.postinst b/dkms_common.postinst
-index d2ac712..2d3738e 100644
+index 79de370..7243e7f 100644
 --- a/dkms_common.postinst
 +++ b/dkms_common.postinst
 @@ -290,3 +290,6 @@ for KERNEL in $KERNELS; do

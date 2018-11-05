@@ -1,10 +1,8 @@
-RELEASE_DATE := "22-September-2014"
+RELEASE_DATE := "26-Apr-2018"
 RELEASE_MAJOR := 2
-RELEASE_MINOR := 2
-RELEASE_SUBLEVEL := 1
-RELEASE_EXTRALEVEL := .0
+RELEASE_MINOR := 6
 RELEASE_NAME := dkms
-RELEASE_VERSION := $(RELEASE_MAJOR).$(RELEASE_MINOR).$(RELEASE_SUBLEVEL)$(RELEASE_EXTRALEVEL)
+RELEASE_VERSION := $(RELEASE_MAJOR).$(RELEASE_MINOR)
 RELEASE_STRING := $(RELEASE_NAME)-$(RELEASE_VERSION)
 DIST := unstable
 SHELL=bash
@@ -50,7 +48,7 @@ install:
 	install -p -m 0755 kernel_prerm.d_dkms  $(KCONF)/prerm.d/dkms
 	install -p -m 0755 kernel_postinst.d_dkms $(KCONF)/postinst.d/dkms
 
-DOCFILES=sample.spec sample.conf AUTHORS COPYING README.dkms sample-suse-9-mkkmp.spec sample-suse-10-mkkmp.spec
+DOCFILES=sample.spec sample.conf AUTHORS COPYING README.md sample-suse-9-mkkmp.spec sample-suse-10-mkkmp.spec
 
 doc-perms:
 	# ensure doc file permissions ok
@@ -117,6 +115,7 @@ $(TARBALL):
 
 rpm: $(TARBALL) dkms.spec
 	tmp_dir=`mktemp -d --tmpdir dkms.XXXXXXXX` ; \
+	echo $(tmp_dir); \
 	mkdir -p $${tmp_dir}/{BUILD,RPMS,SRPMS,SPECS,SOURCES} ; \
 	cp $(TARBALL) $${tmp_dir}/SOURCES ; \
 	sed "s/\[INSERT_VERSION_HERE\]/$(RELEASE_VERSION)/" dkms.spec > $${tmp_dir}/SPECS/dkms.spec ; \
