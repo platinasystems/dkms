@@ -1,0 +1,56 @@
+From 6ef1a48eda99ec0d728302830483fd0137174d17 Mon Sep 17 00:00:00 2001
+From: Nikolai Kondrashov <spbnick@gmail.com>
+Date: Sat, 10 Nov 2018 17:30:14 +0200
+Subject: [PATCH] Preserve module version type positions
+
+Initialize the "res" array of get_module_verinfo() to three empty elements to
+preserve relative positions of different version types stored there, when the
+"res" array is expanded in check_version_sanity(), and to allow comparison
+between compatible version types only.
+
+Without that, if the module in question only had "srcversion", which is
+assigned to "res[1]", then after e.g. this assignment in
+check_version_sanity():
+
+    kernels_info=("${res[@]}")
+
+The value will end up in "kernels_info[0]", the position that is
+supposed to be occupied by the regular "version".
+
+In the case of the stock kernel's module having only "srcversion", but
+the installed module having a regular "version", this could lead to a
+comparison between them, in check_version_sanity(), and an incorrect
+conclusion about the module being (not) newer in the kernel.
+
+E.g. when the stock kernel's module only has this field in modinfo:
+
+    filename: /lib/modules/3.10.0-862.14.4.el7.x86_64/kernel/drivers/hid/hid-uclogic.ko.xz
+    srcversion: 27A2028780DCB320780F53D
+
+but the module being installed has these fields:
+
+    filename: /var/lib/dkms/digimend/9/3.10.0-862.14.4.el7.x86_64/x86_64/module//hid-uclogic.ko.xz
+    version: 9
+    srcversion: 0485A47017CB313B2F84B27
+
+DKMS would incorrectly conclude:
+
+    Error! Module version 9 for hid-uclogic.ko.xz
+    is not newer than what is already found in kernel 3.10.0-862.14.4.el7.x86_64 (27A2028780DCB320780F53D).
+---
+ dkms | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dkms b/dkms
+index 2acb0c6..8eb33e7 100644
+--- a/dkms
++++ b/dkms
+@@ -746,7 +746,7 @@ read_conf()
+ 
+ # Little helper function for parsing the output of modinfo.
+ get_module_verinfo(){
+-    res=()
++    res=("" "" "")
+     local vals=
+     while read -a vals; do
+     case ${vals[0]} in

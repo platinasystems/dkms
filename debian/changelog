@@ -1,3 +1,16 @@
+dkms (2.6.1-2) unstable; urgency=medium
+
+  * Team upload (salsa shared repo)
+  * Add dpkg-dev dependency, needed for dpkg-architecture calls (Closes: #884658)
+  * cherry-pick shim-signed break relationship from Ubuntu
+    - (will be needed if Debian shim-signed is updated)
+  * debian/patches/6ef1a48eda99ec0d728302830483fd0137174d17.patch:
+    cherry-pick upstream fix for kernel version parsing
+  * debian/patches/0015-change-arch-in-mkdeb-template.patch: cherry-pick
+    Ubuntu applied fix for mkbmdeb (Closes: #832558)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Wed, 02 Jan 2019 16:15:32 +0100
+
 dkms (2.6.1-1) unstable; urgency=medium
 
   [ Petter Reinholdtsen ]
