@@ -1,0 +1,34 @@
+From 9b44ee67e4a7fc4a215561c8a788a7ea66544ffb Mon Sep 17 00:00:00 2001
+From: Tino Calancha <tino.calancha@gmail.com>
+Date: Sun, 7 Oct 2018 20:27:03 +0900
+Subject: [PATCH] Fix syntactic error when the system shell is zsh
+
+When the system '/bin/sh' points to the zsh shell,
+then the script is run with zsh in sh compatibility mode; in that case
+functions must end with either a semicolon or a newline.
+(https://github.com/dell/dkms/issues/62)
+* dkms_autoinstaller (log_end_msg):
+Terminate the function with a semicolon.
+Add missing white space in comment.
+---
+ dkms_autoinstaller | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dkms_autoinstaller b/dkms_autoinstaller
+index 0e7f070..7fbe8f3 100755
+--- a/dkms_autoinstaller
++++ b/dkms_autoinstaller
+@@ -22,11 +22,11 @@ elif [ -f /etc/rc.d/init.d/functions ]; then
+     . /etc/rc.d/init.d/functions
+ fi
+ 
+-#We only have these functions on debian/ubuntu
++# We only have these functions on debian/ubuntu
+ # so on other distros just stub them out
+ if [ ! -f /etc/debian_version ]; then
+     alias log_daemon_msg=/bin/echo
+-    log_end_msg() { if [ "$1" = "0" ]; then echo " Done. "; else echo " Failed. "; fi }
++    log_end_msg() { if [ "$1" = "0" ]; then echo " Done. "; else echo " Failed. "; fi; }
+     alias log_action_begin_msg=log_daemon_msg
+     alias log_action_end_msg=log_end_msg
+ fi
