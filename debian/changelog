@@ -1,9 +1,3 @@
-dkms (2.6.1-4~bpo9+1) stretch-backports; urgency=medium
-
-  * Rebuild for stretch-backports.
-
- -- Gianfranco Costamagna <locutusofborg@debian.org>  Tue, 15 Jan 2019 17:50:23 +0100
-
 dkms (2.6.1-4) unstable; urgency=medium
 
   * Remove shim-signed break
