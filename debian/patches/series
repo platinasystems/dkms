@@ -5,6 +5,3 @@
 0008-Don-t-assume-boot-config-exists-test-first.patch
 0009-Add-support-for-UEFI-Secure-Boot-validation-toggling.patch
 0015-change-arch-in-mkdeb-template.patch
-6ef1a48eda99ec0d728302830483fd0137174d17.patch
-63.patch
-bash-completions.patch

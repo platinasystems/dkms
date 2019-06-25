@@ -1,3 +1,12 @@
+dkms (2.7.1-1~exp1) experimental; urgency=medium
+
+  * New upstream release
+  * QA upload
+  * Drop upstream patches: 
+    - {63,6ef1a48eda99ec0d728302830483fd0137174d17,bash-completions}.patch
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Tue, 25 Jun 2019 10:45:13 +0200
+
 dkms (2.6.1-4) unstable; urgency=medium
 
   * Remove shim-signed break

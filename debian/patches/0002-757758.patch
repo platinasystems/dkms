@@ -20,7 +20,7 @@ index c90fd43..24a99fc 100644
  #  by Gary Lerhaupt, Matt Domsch, & Mario Limonciello
  #  Copyright (C) 2012 by Darik Horn <dajhorn@vanadac.com>
  #
-@@ -864,16 +864,17 @@ moduleconfig_update_obsoletes()
+@@ -865,16 +865,17 @@ moduleconfig_update_obsoletes()
      # Do all the changes at once, record the diffs for posterity
      for file in "$@"; do
          [[ $file && -w $file ]] || continue

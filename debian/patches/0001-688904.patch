@@ -19,7 +19,7 @@ index be00118..c90fd43 100644
  
  # All of the variables we will accept from dkms.conf.
  # Does not include directives
-@@ -2007,7 +2008,7 @@ module_status_built_extra() (
+@@ -2006,7 +2007,7 @@ module_status_built_extra() (
  # we do not get word splitting where it would be inconvienent.
  module_status_built() {
      local ret=1 directory ka k a state oifs="$IFS" IFS=''
