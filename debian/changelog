@@ -1,8 +1,21 @@
+dkms (2.7.1-1~exp2) experimental; urgency=medium
+
+  * QA upload
+  * Drop trailing newlines
+  * Use DEB_VERSION_UPSTREAM to guess upstream revision
+  * Drop old get-orig-source target
+  * Bump compat level to 12
+  * Bump std-version to 4.3.0, no changes required
+  * Apply UEFI patch from Ubuntu,
+    it is not applied in Debian (removed in debian/rules conditional statement)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Tue, 25 Jun 2019 11:09:04 +0200
+
 dkms (2.7.1-1~exp1) experimental; urgency=medium
 
   * New upstream release
   * QA upload
-  * Drop upstream patches: 
+  * Drop upstream patches:
     - {63,6ef1a48eda99ec0d728302830483fd0137174d17,bash-completions}.patch
 
  -- Gianfranco Costamagna <locutusofborg@debian.org>  Tue, 25 Jun 2019 10:45:13 +0200
@@ -456,10 +469,10 @@ dkms (2.0.22.0-1) unstable; urgency=low
 dkms (2.0.21.1-1) unstable; urgency=low
 
   * [bcda131] Imported Upstream version 2.0.21.1
-  * [487ad26] debian/patches/13-template.patch: 
-    Updated template-dkms-mkdeb Changes: 
-    - Bump to debhelper 7 compatibility levels 
-    - Updated to standards version 3.8.1 
+  * [487ad26] debian/patches/13-template.patch:
+    Updated template-dkms-mkdeb Changes:
+    - Bump to debhelper 7 compatibility levels
+    - Updated to standards version 3.8.1
     - Use Dynamic Kernel Modules Support Team as maintainer field
     - Remove bash and add ${misc:Depends} in Depends
     - Use dh_prep instead of dh_clean -k
@@ -556,7 +569,7 @@ dkms (2.0.20.4-1) unstable; urgency=low
   * Standards-Version bumped to 3.8.0
     - Add debian/README.source to document quilt usage
   * debian/prerm: quiet grep, do not write anything to standard output.
-  * debian/rules: 
+  * debian/rules:
     - remove some pointless blank lines
     - fix dh-clean-k-is-deprecated lintian warning, use dh_prep instead of
       dh_clean -k
@@ -576,13 +589,13 @@ dkms (2.0.20.4-1) unstable; urgency=low
     if ramdisk value in /etc/kernel-img.conf is missing
   * debian/patches/09-lilo_detection.patch: check /etc/kernel-img.conf
     to find if user is using grub
-  * debian/patches/10-lsb.patch: 
+  * debian/patches/10-lsb.patch:
     - /etc/lsb-release is not present in Debian, so run run lsb_release
     - Added Debian as known distro in override_dest_module_location()
-  * debian/control: 
+  * debian/control:
     - Added lsb-release in Recommends
     - Updated VCS control field
-    - Added build-essential in Depends (LP: #304014), 
+    - Added build-essential in Depends (LP: #304014),
       Removed ${shlibs:Depends} from Depends and removed make, dpkg-dev and
       gcc from Recommends
   * debian/patches/11-bash-completion.patch: Improve bash-completion
@@ -634,7 +647,7 @@ dkms (2.0.17.4-0ubuntu3) hardy; urgency=low
  -- Scott James Remnant <scott@ubuntu.com>  Fri, 14 Dec 2007 16:15:13 +0000
 
 dkms (2.0.17.5-0ubuntu1) hardy; urgency=low
-	
+
   * Correct DKMS file install/uninstall problems  (LP: #151644)
     - call udevtrigger if we install a module for the currently running kernel
     - uninstall from /extra before DEST_MODULE_LOCATION
