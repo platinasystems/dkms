@@ -6,11 +6,23 @@ set -eu
 
 run_pkg() {
     pkg="$1"
+    tmpfile=$(mktemp)
 
     echo "I: Installing binary package $pkg"
     export DEBIAN_FRONTEND=noninteractive
     RC=0
-    apt-get install -yq $pkg </dev/null || RC=$?
+    apt-get install -yq $pkg </dev/null 2>&1 >"$tmpfile" || RC=$?
+    cat "$tmpfile"
+
+    # Do not continue if dkms build was skipped due to BUILD_EXCLUSIVE
+    # directive
+    excluded=0
+    grep -q "BUILD_EXCLUSIVE" "$tmpfile" && excluded=1
+    rm "$tmpfile"
+    if [ "$excluded" -eq 1 ]; then
+	    echo "I: Package $pkg excluded by BUILD_EXCLUSIVE directive, skipping"
+	    return
+    fi
 
     # collect build logs as artifacts
     if [ -d /var/lib/dkms ]; then
