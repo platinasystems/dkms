@@ -1,3 +1,36 @@
+dkms (2.7.1-4) unstable; urgency=medium
+
+  * QA upload.
+  * Cherry-pick two other Ubuntu/Upstream patches:
+    - 0017-fix-OBSOLETE_BY-in-DKMS.CONF-Closes-81.patch
+    - lp-1827697.patch
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Fri, 06 Sep 2019 10:17:59 +0200
+
+dkms (2.7.1-3) unstable; urgency=medium
+
+  * QA upload
+
+  [ You-Sheng Yang ]
+  * Fix lintian warnings related to manpages typos
+  * Add debian/ci yaml file
+  * Fix lintian warning about python shebang
+
+  [ Dimitri John Ledkov]
+  * Try to improve dkms-autopkgtest when testing incompatible dkms
+    modules. Ensure package is purged first, as make.log is not
+    regenerated upon second installation. Also, before checking the
+    make.log check if the package in question is a dkms.conf one, as
+    otherwise empty tarball is created. This should now unbreak
+    testability of multi-binary packages, which have build-excluded dkms
+    modules.
+
+  [ Timo Aaltonen ]
+  * dkms: cherry-pick from upstream a35d981 for issue #89
+    0019-fix-OBSOLETE_BY-be-blocked-by-force-Closes-89.patch (LP: #1838921)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Fri, 06 Sep 2019 10:08:19 +0200
+
 dkms (2.7.1-2) unstable; urgency=medium
 
   * QA upload

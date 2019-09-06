@@ -8,11 +8,20 @@ run_pkg() {
     pkg="$1"
     tmpfile=$(mktemp)
 
+    echo "I: removing binary package $pkg, to get clean state"
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get purge -yq $pkg </dev/null 2>&1 >/dev/null || true
+
     echo "I: Installing binary package $pkg"
     export DEBIAN_FRONTEND=noninteractive
     RC=0
     apt-get install -yq $pkg </dev/null 2>&1 >"$tmpfile" || RC=$?
     cat "$tmpfile"
+
+    if ! dkms_conf=$(dpkg -L $pkg | grep 'dkms.conf$'); then
+        echo "I: Package $pkg has no dkms.conf, skipping"
+        return
+    fi
 
     # Do not continue if dkms build was skipped due to BUILD_EXCLUSIVE
     # directive
@@ -36,10 +45,6 @@ run_pkg() {
 
     echo "I: Testing binary package $pkg"
 
-    if ! dkms_conf=$(dpkg -L $pkg | grep 'dkms.conf$'); then
-        echo "I: Package $pkg has no dkms.conf, skipping"
-        return
-    fi
     dkms_pkg=$(bash -c ". $dkms_conf; echo \$PACKAGE_NAME" 2>/dev/null)
 
     echo "I: Testing if $dkms_pkg modules are correctly installed"

@@ -18,7 +18,7 @@ Index: b/dkms
 ===================================================================
 --- a/dkms
 +++ b/dkms
-@@ -1384,10 +1384,29 @@ clean_build()
+@@ -1385,10 +1385,29 @@ clean_build()
      rm -rf "$dkms_tree/$module/$module_version/build"
  }
  

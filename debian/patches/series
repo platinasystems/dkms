@@ -5,3 +5,7 @@
 0008-Don-t-assume-boot-config-exists-test-first.patch
 0009-Add-support-for-UEFI-Secure-Boot-validation-toggling.patch
 0015-change-arch-in-mkdeb-template.patch
+0017-fix-OBSOLETE_BY-in-DKMS.CONF-Closes-81.patch
+lp-1827697.patch
+0008-man-fix-manpage-has-errors-from-man-lintina-warning.patch
+0019-fix-OBSOLETE_BY-be-blocked-by-force-Closes-89.patch

@@ -1,0 +1,45 @@
+From: You-Sheng Yang <vicamo@gmail.com>
+Date: Wed, 7 Aug 2019 19:53:19 +0800
+Subject: man: fix manpage-has-errors-from-man lintian warnings
+
+Signed-off-by: You-Sheng Yang <vicamo@gmail.com>
+---
+ dkms.8 | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/dkms.8 b/dkms.8
+index 0220f65..1e9a178 100644
+--- a/dkms.8
++++ b/dkms.8
+@@ -226,8 +226,8 @@ on just one system and then use
+ on all of your other systems to get the same built modules loaded
+ without having to wait for anything to compile.
+ .SY ldtarball
+-.OS /path/to/tarball.tar
+-.OS --force
++.OP /path/to/tarball.tar
++.OP --force
+ .YS
+ .IP "" 4
+ This takes a tarball made from the
+@@ -950,12 +950,15 @@ option.
+ You can override the module-provided
+ .I dkms.conf
+ files. Every time after a  dkms.conf file is read, dkms will look for and read the following files in order:
+-
+-.I /etc/dkms/<module>.conf\p
+-.I /etc/dkms/<module>\-<module\-version>.conf\p
+-.I /etc/dkms/<module>\-<module\-version>\-<kernel>.conf\p
++.PP
++.I /etc/dkms/<module>.conf
++.br
++.I /etc/dkms/<module>\-<module\-version>.conf
++.br
++.I /etc/dkms/<module>\-<module\-version>\-<kernel>.conf
++.br
+ .I /etc/dkms/<module>\-<module\-version>\-<kernel>\-<arch>.conf
+-
++.PP
+ You can use these files to override settings in the module-provided dkms.conf files.
+ .SH /etc/dkms/framework.conf
+ This configuration file controls how the overall DKMS framework handles.  It is sourced
