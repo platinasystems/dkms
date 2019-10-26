@@ -17,7 +17,7 @@ Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends},
  kmod | kldutils,
- gcc,
+ gcc | c-compiler,
  dpkg-dev,
  make | build-essential,
  coreutils (>= 7.4),

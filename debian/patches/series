@@ -8,4 +8,5 @@
 0017-fix-OBSOLETE_BY-in-DKMS.CONF-Closes-81.patch
 lp-1827697.patch
 0008-man-fix-manpage-has-errors-from-man-lintina-warning.patch
-0019-fix-OBSOLETE_BY-be-blocked-by-force-Closes-89.patch
+0019-add-force-version-override-and-dkms-_version-overrid.patch
+0020-versioned-provides.patch

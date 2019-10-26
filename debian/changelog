@@ -1,3 +1,26 @@
+dkms (2.7.1-5) unstable; urgency=medium
+
+  [ Aron Xu ]
+  * Allow any c-compiler to satisfy the required Depends (Closes: #620754)
+  * Only test "-dkms" packages in dkms-autopkgtest (Closes: #903588)
+
+  [ Alex Tu ]
+  * revert 0019-fix-OBSOLETE_BY-be-blocked-by-force-Closes-89.patch
+  * cherry-pick from upstream 9bbef17 for issue #89 #42
+    - 0019-add-force-version-override-and-dkms-_version-overrid.patch
+    (LP: #1838921)
+
+  [ Martijn Grendelman ]
+  * Add versioned provides to mkbmdeb (Closes: #943484)
+
+  [ Gianfranco Costamagna ]
+  * QA upload.
+  * Add Ubuntu patch, now upstream
+  * Drop old patch
+  * Add patch from Martijn Grendelman to add versioned provides to dkms
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Sat, 26 Oct 2019 12:47:11 +0200
+
 dkms (2.7.1-4) unstable; urgency=medium
 
   * QA upload.
