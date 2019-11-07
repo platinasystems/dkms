@@ -1,3 +1,10 @@
+dkms (2.8.1-2) unstable; urgency=medium
+
+  * QA upload
+  * Fix build by dropping patch revert
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Thu, 07 Nov 2019 23:27:29 +0100
+
 dkms (2.8.1-1) unstable; urgency=medium
 
   * New upstream version 2.8.1
