@@ -6,6 +6,7 @@ Build-Depends: debhelper (>= 7), dkms
 Standards-Version: 3.8.1
 
 Package: DEBIAN_PACKAGE-dkms
-Architecture: all
+Architecture: DEBIAN_BUILD_ARCH
+Provides: DEBIAN_PACKAGE-modules (= MODULE_VERSION)
 Depends: dkms (>= 1.95), ${misc:Depends}
 Description: DEBIAN_PACKAGE driver in DKMS format.

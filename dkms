@@ -20,6 +20,7 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
+shopt -s extglob
 
 # All of the variables we will accept from dkms.conf.
 # Does not include directives
@@ -33,7 +34,8 @@ readonly dkms_conf_variables="CLEAN REMAKE_INITRD remake_initrd PACKAGE_NAME
    DEST_MODULE_LOCATION dest_module_location
    modules_conf_obsoletes MODULES_CONF_ALIAS_TYPE
    modules_conf_alias_type STRIP strip MODULES_CONF_OBSOLETE_ONLY
-   modules_conf_obsolete_only AUTOINSTALL NO_WEAK_MODULES"
+   modules_conf_obsolete_only AUTOINSTALL NO_WEAK_MODULES
+   SIGN_TOOL"
 
 # Some important regular expressions.  Requires bash 3 or above.
 # Any poor souls still running bash 2 or older really need an upgrade.
@@ -43,12 +45,16 @@ readonly rh_kernels='(debug|summit|smp|enterprise|bigmem|hugemem|BOOT|vmnix)'
 
 # Areas that will vary between Linux and other OS's
 _get_kernel_dir() {
-    KVER=$1
-    case ${current_os} in
-       Linux)          DIR="/lib/modules/$KVER/build" ;;
-       GNU/kFreeBSD)   DIR="/usr/src/kfreebsd-headers-$KVER/sys" ;;
-    esac
-    echo $DIR
+    if [[ -z $ksourcedir_fromcli ]]; then
+        KVER=$1
+        case ${current_os} in
+           Linux)          DIR="/lib/modules/$KVER/build" ;;
+           GNU/kFreeBSD)   DIR="/usr/src/kfreebsd-headers-$KVER/sys" ;;
+        esac
+        echo $DIR
+    else
+        echo $kernel_source_dir
+    fi
 }
 
 _check_kernel_dir() {
@@ -128,10 +134,10 @@ mktemp_or_die() {
 show_usage()
 {
     echo $"Usage: $0 [action] [options]"
-    echo $"  [action]  = { add | remove | build | install | uninstall | match | autoinstall"
-    echo $"               | mkdriverdisk | mktarball | ldtarball | mkrpm | mkkmp | mkdeb | status }"
+    echo $"  [action]  = { add | remove | build | install | uninstall | match | autoinstall | mkdriverdisk |"
+    echo $"                mktarball | ldtarball | mkrpm | mkkmp | mkdeb | mkdsc | mkbmdeb | status }"
     echo $"  [options] = [-m module] [-v module-version] [-k kernel-version] [-a arch]"
-    echo $"              [-d distro] [-c dkms.conf-location] [-q] [--force] [--all]"
+    echo $"              [-d distro] [-c dkms.conf-location] [-q] [--force] [--force-version-override] [--all]"
     echo $"              [--templatekernel=kernel] [--directive='cli-directive=cli-value']"
     echo $"              [--config=kernel-.config-location] [--archive=tarball-location]"
     echo $"              [--kernelsourcedir=source-location] [--no-prepare-kernel] [--no-initrd]"
@@ -209,8 +215,10 @@ set_module_suffix()
 
 set_kernel_source_dir()
 {
-    # $1 = the kernel to base the directory on
-    kernel_source_dir="$(_get_kernel_dir "$1")"
+    if [[ -z $ksourcedir_fromcli ]]; then
+        # $1 = the kernel to base the directory on
+        kernel_source_dir="$(_get_kernel_dir "$1")"
+    fi
 }
 
 # A little test function for DKMS commands that only work on one kernel.
@@ -587,6 +595,7 @@ read_conf()
     pre_build="$PRE_BUILD"
     pre_install="$PRE_INSTALL"
     obsolete_by="$OBSOLETE_BY"
+    sign_tool="$SIGN_TOOL"
 
     # Set module naming/location arrays
     local index array_size=0 s
@@ -770,9 +779,7 @@ check_version_sanity()
     echo $"Running module version sanity check."
     local i=0
     local -a kernels_info dkms_info
-    set_module_suffix
-    read -a kernels_module < <(find_module "$lib_tree" "${4}")
-    if [ -z $kernels_module ]; then
+    if [ -n $3 ]; then
         # Magic split into array syntax saves trivial awk and cut calls.
         local -a obs=(${3//-/ })
         local -a my=(${1//-/ })
@@ -803,9 +810,15 @@ check_version_sanity()
             echo $"for future kernels above $3." >&2
             echo $"You may override by specifying --force." >&2
             return 1
-  else
-          return 0
         fi
+    fi
+    set_module_suffix
+    read -a kernels_module < <(find_module "$lib_tree" "${4}")
+    [ -z $kernels_module ] && return 0
+
+    if [[ "$force_version_override" == "true" ]]; then
+        # Skip the following version checking code.
+        return 0
     fi
 
     if [[ ${kernels_module[1]} ]]; then
@@ -864,16 +877,17 @@ moduleconfig_update_obsoletes()
     # Do all the changes at once, record the diffs for posterity
     for file in "$@"; do
         [[ $file && -w $file ]] || continue
+        _tmpf="$temp_dir_name/${file##*/}.new"
         if [[ $file = /etc/sysconfig/kernel ]]; then
-            sed "${sa_sck_o[*]}" "$file" > "$temp_dir_name/${file##*/}.new"
+            [ -z "${sa_sck_o[@]}" ] || sed "${sa_sck_o[@]}" "$file" > "$_tmpf"
         else
-            sed "${sa_mc_o[*]}" "$file" > "$temp_dir_name/${file##*/}.new"
+            [ -z "${sa_mc_o[@]}" ] || sed "${sa_mc_o[@]}" "$file" > "$_tmpf"
         fi
-        if ! mod_diff=$(diff -u "$temp_dir_name/${file##*/}.new" "$file"); then
+	if [ -f "$_tmpf" ] && ! mod_diff=$(diff -u "$_tmpf" "$file"); then
             echo $"$file updated to replace obsoleted module references:"
             echo "$mod_diff"
-            cp -fp "$temp_dir_name/${file##*/}.new" "$file"
-            rm -f "$temp_dir_name/${file##*/}.new"
+            cp -fp "$_tmpf" "$file"
+            rm -f "$_tmpf"
         fi
     done
 }
@@ -1051,6 +1065,21 @@ run_build_script() {
     fi
 }
 
+run_sign_tool() {
+    # $1 = sign tool to run
+    # $2 = module file to sign
+    local logfile="$base_dir/log/make.log"
+    if [[ -x "$1" ]]; then
+        echo "Signing $2" >> "$logfile"
+        "$1" "$kernelver" "$2" || \
+        report_build_problem 11 $"Bad exit status $? for sign tool." \
+            $"Consult $logfile for more information."
+    else
+        echo $""
+        warn $"The $1 is not executable."
+    fi
+}
+
 # Register a DKMS-ified source tree with DKMS.
 # This function is smart enough to register the module if we
 # passed a source tree or a tarball instead of relying on the source tree
@@ -1127,7 +1156,7 @@ prepare_kernel()
                 ;;
         * )
             die 1 echo $"Your kernel headers for kernel $1 cannot be found at" \
-                $"/lib/modules/$1/build or /lib/modules/$1/source."
+                $"/lib/modules/$1/build or /lib/modules/$1/source." \
                 $"You can use the --kernelsourcedir option to tell DKMS where it's located."
             ;;
     esac
@@ -1341,14 +1370,19 @@ do_build()
     # Save a copy of the new module
     mkdir "$base_dir/module" >/dev/null
     for ((count=0; count < ${#built_module_name[@]}; count++)); do
-    [[ ${strip[$count]} != no ]] && strip -g "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
-    if [ "$module_compressed_suffix" = ".gz" ]; then
-        gzip -9f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
-    elif [ "$module_compressed_suffix" = ".xz" ]; then
-        xz -f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
-    fi
-    cp -f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_suffix" \
-        "$base_dir/module/${dest_module_name[$count]}$module_suffix" >/dev/null
+        [[ ${strip[$count]} != no ]] && strip -g "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
+
+        if [ -n "${sign_tool}" ]; then
+            run_sign_tool "${sign_tool}" "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
+        fi
+
+        if [ "$module_compressed_suffix" = ".gz" ]; then
+            gzip -9f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
+        elif [ "$module_compressed_suffix" = ".xz" ]; then
+            xz -f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
+        fi
+        cp -f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_suffix" \
+            "$base_dir/module/${dest_module_name[$count]}$module_suffix" >/dev/null
     done
 
     # Run the post_build script
@@ -1380,10 +1414,30 @@ clean_build()
     rm -rf "$dkms_tree/$module/$module_version/build"
 }
 
+sign_build()
+{
+    [[ -x "$(command -v kmodsign)" && -d "/var/lib/shim-signed/mok/" ]] || return
+    local base_dir="$dkms_tree/$module/$module_version/$kernelver/$arch"
+    if type update-secureboot-policy >/dev/null 2>&1; then
+        echo $"Signing module:"
+        SHIM_NOTRIGGER=y update-secureboot-policy --new-key
+        for ko in `find "$base_dir/module/" -name "*.ko" -print`;
+        do
+            echo " - $ko"
+            kmodsign sha512 \
+                /var/lib/shim-signed/mok/MOK.priv \
+                /var/lib/shim-signed/mok/MOK.der \
+                "$ko"
+        done
+        update-secureboot-policy --enroll-key
+    fi
+}
+
 build_module()
 {
     prepare_build
     do_build
+    sign_build
     clean_build
     echo $""
     echo $"DKMS: build completed."
@@ -1404,6 +1458,10 @@ force_installation()
 
         for elem in $to_force; do
             if [ "${1}" = "${elem}" ]; then
+                echo "force"
+                return 0
+            elif [ "${1}_version-override" = "${elem}" ]; then
+                echo "version-override"
                 return 0
             fi
         done
@@ -1425,9 +1483,14 @@ install_module()
     tmp_force="$force"
 
     # If the module is set to be force-installed
-    force_installation $module && echo "Forcing installation of $module" \
-        && force="true"
-
+    local ret=$(force_installation $module)
+    if [[ "$ret" == "force" ]];then
+        force="true"
+        echo "Forcing installation of $module"
+    elif [[ "$ret" == "version-override" ]];then
+        force_version_override="true"
+        echo "Forcing version override of $module"
+    fi
     # Make sure that kernel exists to install into
     [[ -e $install_tree/$kernelver ]] || die 6 \
         $"The directory $install_tree/$kernelver doesn't exist." \
@@ -1757,7 +1820,7 @@ do_uninstall()
         while [ "${dir_to_remove}" != "${dir_to_remove#/}" ]; do
             dir_to_remove="${dir_to_remove#/}"
         done
-        (cd "$install_tree/$1" && rmdir --parents --ignore-fail-on-non-empty "${dir_to_remove}" || true)
+        (cd "$install_tree/$1" && rmdir -p --ignore-fail-on-non-empty "${dir_to_remove}" || true)
         echo $" - Original module"
         local origmod=$(compressed_or_uncompressed "$dkms_tree/$module/original_module/$1/$2" "${dest_module_name[$count]}")
         if [[ -n "$origmod" ]]; then
@@ -2006,7 +2069,7 @@ module_status_built_extra() (
 # we do not get word splitting where it would be inconvienent.
 module_status_built() {
     local ret=1 directory ka k a state oifs="$IFS" IFS=''
-    for directory in "$dkms_tree/$1/$2/"${3:-[0-9].*}/${4:-*}; do
+    for directory in "$dkms_tree/$1/$2/"${3:-+([0-9]).*}/${4:-*}; do
         IFS="$oifs"
         ka="${directory#$dkms_tree/$1/$2/}"
         k="${ka%/*}"
@@ -2574,13 +2637,13 @@ make_tarball()
     fi
     case $tarball_ext in
         gz)
-            gzip --force -9 "$tarball_dest/$tarball_name"
+            gzip -f -9 "$tarball_dest/$tarball_name"
             ;;
         bz2)
-            bzip2 --force -9 "$tarball_dest/$tarball_name"
+            bzip2 -f -9 "$tarball_dest/$tarball_name"
             ;;
         xz)
-            xz --force -9 "$tarball_dest/$tarball_name"
+            xz -f -9 "$tarball_dest/$tarball_name"
             ;;
     esac
     echo $""
@@ -2906,6 +2969,8 @@ preproc_file()
     local date_str="$(date -R)"
     echo "modifying $1..."
     sed -e "s/DEBIAN_PACKAGE/$debian_package/g" \
+	-e "s/DEBIAN_BUILD_ARCH/$debian_build_arch/g" \
+	-e "s/KERNEL_VERSION/$kernelver/g" \
         -e "s/MODULE_NAME/$module/g" \
         -e "s/MODULE_VERSION/$module_version/g" \
         -e "s/DATE_STAMP/$date_str/" "$1" > "$1.dkms-pp"
@@ -2968,6 +3033,11 @@ make_debian()
     make_common_test "mk${create_type}"
 
     debian_package=${module//_/-}
+    if [[ $source_only ]]; then
+         debian_build_arch='all'
+    else
+         debian_build_arch=$(dpkg-architecture -qDEB_BUILD_ARCH)
+    fi
 
     # Read the conf file
     read_conf_or_die "$kernelver" "$arch"
@@ -3004,23 +3074,6 @@ make_debian()
         invoke_command "cp '$PREFIX/usr/lib/dkms/common.postinst' '$temp_dir_debian'" "copying legacy postinstall template"
     fi
 
-    # Copy in the source tree
-    if [[ ! $binaries_only ]]; then
-        invoke_command "cp -Lpr '$dkms_tree/$module/$module_version/source' '$temp_dir_debian/$module-$module_version'" "Copying source tree"
-    fi
-
-    # Only if we are shipping binary modules, make a .tgz for the deb
-    local archive_location="$dkms_tree/$module/$module_version/tarball/$module-$module_version.dkms.tar.gz"
-    if [[ ! $source_only ]]; then
-        binaries_only="binaries-only"
-        invoke_command "make_tarball" "Gathering binaries"
-        if [[ -f $archive_location ]]; then
-            invoke_command "cp '$archive_location' '$temp_dir_debian'" "Copying DKMS tarball into DKMS tree"
-        else
-            die 12 $"Unable to find created tarball."
-        fi
-    fi
-
     # Calculate destination directory
     deb_basedir=$dkms_tree/$module/$module_version/${create_type}
     mkdir -p ${deb_basedir} >/dev/null 2>&1
@@ -3029,6 +3082,7 @@ make_debian()
     pushd "$temp_dir_debian" > /dev/null 2>&1
     case "$create_type" in
     dsc)
+        invoke_command "cp -Lpr '$dkms_tree/$module/$module_version/source' '$temp_dir_debian/$module-$module_version'" "Copying source tree"
         invoke_command "dpkg-buildpackage -S -us -uc 1>/dev/null" "Building source package" || \
             die 7 $"There was a problem creating your ${create_type}."
         echo $""
@@ -3036,11 +3090,30 @@ make_debian()
         invoke_command "mv '$temp_dir/${debian_package}-dkms_${module_version}_source.changes' '$temp_dir/${debian_package}-dkms_${module_version}.dsc' '$temp_dir/${debian_package}-dkms_${module_version}.tar.gz' '$deb_basedir'" "Moving built files to $deb_basedir"
         ;;
     deb)
+        invoke_command "cp -Lpr '$dkms_tree/$module/$module_version/source' '$temp_dir_debian/$module-$module_version'" "Copying source tree"
         invoke_command "dpkg-buildpackage -rfakeroot -d -b -us -uc 1>/dev/null" "Building binary package" || \
             die 7 $"There was a problem creating your ${create_type}."
         echo $""
         echo $"DKMS: mk${create_type} completed."
-        invoke_command "mv '$temp_dir/${debian_package}-dkms_${module_version}_all.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
+        invoke_command "mv '$temp_dir/${debian_package}-dkms_${module_version}_${debian_build_arch}.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
+	;;
+    bmdeb)
+        local archive_location="$dkms_tree/$module/$module_version/tarball/$module-$module_version.dkms.tar.gz"
+        # Force binaries_only
+        binaries_only="binaries-only"
+        invoke_command "make_tarball" "Gathering binaries"
+        if [[ -f $archive_location ]]; then
+            invoke_command "cp '$archive_location' '$temp_dir_debian'" "Copying DKMS tarball into DKMS tree"
+        else
+            die 12 $"Unable to find created tarball."
+        fi
+        export KVER="$kernelver"
+        export KARCH="$arch"
+        invoke_command "dpkg-buildpackage -rfakeroot -d -b -us -uc 1>/dev/null" "Building binary package" || \
+        die 7 $"There was a problem creating your ${create_type}."
+        echo $""
+        echo $"DKMS: mk${create_type} completed."
+        invoke_command "mv '$temp_dir/${debian_package}-modules-${kernelver}_${module_version}_${debian_build_arch}.deb' '$deb_basedir'" "Moving built files to $deb_basedir"
         ;;
     esac
     popd > /dev/null 2>&1
@@ -3547,6 +3620,7 @@ kernel_source_dir=""
 ksourcedir_fromcli=""
 action=""
 force=""
+force_version_override=""
 no_prepare_kernel=""
 no_clean_kernel=""
 binaries_only=""
@@ -3569,7 +3643,7 @@ die_is_fatal="yes"
 [ -x /usr/lib/module-init-tools/weak-modules ] && weak_modules='/usr/lib/module-init-tools/weak-modules'
 no_depmod=""
 
-action_re='^(remove|(auto|un)?install|match|mk(driverdisk|tarball|rpm|deb|dsc|kmp)|build|add|status|ldtarball)$'
+action_re='^(remove|(auto|un)?install|match|mk(driverdisk|tarball|rpm|deb|bmdeb|dsc|kmp)|build|add|status|ldtarball)$'
 
 # Parse command line arguments
 while (($# > 0)); do
@@ -3629,6 +3703,9 @@ while (($# > 0)); do
             ;;
         --force)
             force="true"
+            ;;
+        --force-version-override)
+            force_version_override="true"
             ;;
         --all)
             all="true"
@@ -3791,6 +3868,9 @@ for action_to_run in $action; do
         ;;
     mkdeb)
         make_debian "deb"
+        ;;
+    mkbmdeb)
+        make_debian "bmdeb"
         ;;
     mkdsc)
         make_debian "dsc"

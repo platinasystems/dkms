@@ -1,6 +1,6 @@
-RELEASE_DATE := "26-Apr-2018"
+RELEASE_DATE := "31-OCT-2019"
 RELEASE_MAJOR := 2
-RELEASE_MINOR := 6
+RELEASE_MINOR := 8
 RELEASE_NAME := dkms
 RELEASE_VERSION := $(RELEASE_MAJOR).$(RELEASE_MINOR)
 RELEASE_STRING := $(RELEASE_NAME)-$(RELEASE_VERSION)
@@ -88,6 +88,10 @@ install-debian: install install-doc
 	chmod +x $(ETC)/template-dkms-mkdeb/debian/postinst
 	chmod +x $(ETC)/template-dkms-mkdeb/debian/prerm
 	chmod +x $(ETC)/template-dkms-mkdeb/debian/rules
+	mkdir   -p -m 0755 $(ETC)/template-dkms-mkbmdeb/debian
+	install -p -m 0664 template-dkms-mkbmdeb/Makefile $(ETC)/template-dkms-mkbmdeb/
+	install -p -m 0664 template-dkms-mkbmdeb/debian/* $(ETC)/template-dkms-mkbmdeb/debian/
+	chmod +x $(ETC)/template-dkms-mkbmdeb/debian/rules
 	rm $(DOCDIR)/COPYING*
 	rm $(DOCDIR)/sample*
 

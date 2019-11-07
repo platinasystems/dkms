@@ -1,3 +1,23 @@
+dkms (2.8.1-1) unstable; urgency=medium
+
+  * New upstream version 2.8.1
+  * Drop all the patches, all of them are now upstream
+    - 0001-688904.patch
+    - 0002-757758.patch
+    - 0003-Do-not-ignore-kernelsourcedir.patch
+    - 0004-mkbmdeb-support-for-lean-binary-package-with-only-th.patch
+    - 0008-Don-t-assume-boot-config-exists-test-first.patch
+    - 0009-Add-support-for-UEFI-Secure-Boot-validation-toggling.patch
+    - 0015-change-arch-in-mkdeb-template.patch
+    - 0017-fix-OBSOLETE_BY-in-DKMS.CONF-Closes-81.patch
+    - lp-1827697.patch
+    - 0008-man-fix-manpage-has-errors-from-man-lintina-warning.patch
+    - 0019-add-force-version-override-and-dkms-_version-overrid.patch
+    - 0020-versioned-provides.patch
+  * Bump std-version to 4.4.1, no changes required
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Thu, 07 Nov 2019 17:49:54 +0100
+
 dkms (2.7.1-5) unstable; urgency=medium
 
   [ Aron Xu ]
