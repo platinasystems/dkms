@@ -1,3 +1,14 @@
+dkms (2.8.1-3) unstable; urgency=medium
+
+  * Suggest e2fsprogs (Closes: #887263)
+  * Add some verbosity on log messages (Closes: #840620)
+  * Depend on lsb-release (Closes: #896814)
+  * Do not depend anymore on python3-apport, removed even from experimental
+    (Closes: #881709)
+  * Add back the pre-depends on lsb-release (Closes: #826928)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Fri, 08 Nov 2019 12:39:25 +0100
+
 dkms (2.8.1-2) unstable; urgency=medium
 
   * QA upload
