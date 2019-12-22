@@ -1,3 +1,16 @@
+dkms (2.8.1-4) unstable; urgency=medium
+
+  [ Gianfranco Costamagna ]
+  * Team upload
+  * Import Ubuntu patch
+
+  [ Dimitri John Ledkov ]
+  * Some dkms modules are included by the Ubuntu kernel and not overriden
+    by default. That's ok, as long as they are installed. Do not fail
+    autopkgtest in this case. See virtualbox dkms test.
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Sun, 22 Dec 2019 10:00:44 +0100
+
 dkms (2.8.1-3) unstable; urgency=medium
 
   * Suggest e2fsprogs (Closes: #887263)

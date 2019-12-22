@@ -46,6 +46,7 @@ run_pkg() {
     echo "I: Testing binary package $pkg"
 
     dkms_pkg=$(bash -c ". $dkms_conf; echo \$PACKAGE_NAME" 2>/dev/null)
+    dkms_ver=$(bash -c ". $dkms_conf; echo \$PACKAGE_VERSION" 2>/dev/null)
 
     echo "I: Testing if $dkms_pkg modules are correctly installed"
     dkmsstatus="$(dkms status $dkms_pkg)"
@@ -54,6 +55,15 @@ run_pkg() {
         exit 1
     fi
     echo "$dkmsstatus"
+
+    if grep -q "Good news! Module version $dkms_ver" /var/log/apt/term.log; then
+        tail -n 50 /var/log/apt/term.log
+        if ! echo "$dkmsstatus" | grep -q "installed"; then
+            echo "E: not installed" >&2
+            exit 1
+        fi
+        exit 0
+    fi
 
     if ! echo "$dkmsstatus" | grep -q "installed$"; then
         echo "E: not installed" >&2
