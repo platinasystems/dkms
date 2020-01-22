@@ -1,3 +1,13 @@
+dkms (2.8.1-5) unstable; urgency=medium
+
+  * Team upload.
+  * Patch dkms to not load random modules during dkms install
+    Closes: #931017
+  * Replace maintainer email address with dkms@packages.debian.org
+  * Drop Depends on lsb-release, we have Pre-Depends already.
+
+ -- Raphaël Hertzog <raphael@offensive-security.com>  Wed, 22 Jan 2020 12:42:37 +0100
+
 dkms (2.8.1-4) unstable; urgency=medium
 
   [ Gianfranco Costamagna ]
