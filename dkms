@@ -221,16 +221,21 @@ set_kernel_source_dir()
     fi
 }
 
+check_all_is_banned()
+{
+    if [[ $all ]]; then
+        die 5 $"The action $1 does not support the --all" \
+        $"parameter."
+    fi
+}
+
 # A little test function for DKMS commands that only work on one kernel.
 have_one_kernel() {
     if (( ${#kernelver[@]} != 1 )); then
         die 4 $"The action $1 does not support multiple kernel version" \
         $"parameters on the command line."
     fi
-    if [[ $all ]]; then
-        die 5 $"The action $1 does not support the --all" \
-        $"parameter."
-    fi
+    check_all_is_banned $1
 }
 
 # Set up the kernelver and arch arrays.  You must have a 1:1 correspondence --
@@ -257,7 +262,6 @@ setup_kernels_arches()
     if [[ $1 != status ]]; then
         if [[ ! $kernelver && ! $all ]]; then
             kernelver[0]=$(uname -r)
-            kernels_arches_default="yes"
         fi
         if [[ ! $arch ]]; then
             kernelver_rpm=$(rpm -qf "/lib/modules/$kernelver" 2>/dev/null | \
@@ -595,7 +599,6 @@ read_conf()
     pre_build="$PRE_BUILD"
     pre_install="$PRE_INSTALL"
     obsolete_by="$OBSOLETE_BY"
-    sign_tool="$SIGN_TOOL"
 
     # Set module naming/location arrays
     local index array_size=0 s
@@ -812,7 +815,7 @@ check_version_sanity()
             return 1
         fi
     fi
-    set_module_suffix
+    set_module_suffix "$1"
     read -a kernels_module < <(find_module "$lib_tree" "${4}")
     [ -z $kernels_module ] && return 0
 
@@ -1026,7 +1029,7 @@ etc_sysconfig_kernel_modify()
 
 check_module_args() {
     [[ $module && $module_version ]] && return
-    die 1 $"Invalid number of arguments passed." \
+    die 1 $"Arguments <module> and <module-version> are not specified" \
         $"Usage: $1 <module>/<module-version> or" \
         $"       $1 -m <module>/<module-version> or" \
         $"       $1 -m <module> -v <module-version>"
@@ -1097,6 +1100,14 @@ add_module()
     # Check that we have all the arguments
     check_module_args add
 
+    # Do stuff for --rpm_safe_upgrade
+    if [[ $rpm_safe_upgrade ]]; then
+        local pppid=$(awk '/PPid:/ {print $2}' /proc/$PPID/status)
+        local lock_name=$(mktemp_or_die $tmp_location/dkms_rpm_safe_upgrade_lock.$pppid.XXXXXX)
+        echo "$module-$module_version" >> $lock_name
+        ps -o lstart --no-headers -p $pppid 2>/dev/null >> $lock_name
+    fi
+
     # Check that this module-version hasn't already been added
     if is_module_added "$module" "$module_version"; then
         die 3 $"DKMS tree already contains: $module-$module_version" \
@@ -1109,14 +1120,6 @@ add_module()
     if ! [[ -d $source_tree/$module-$module_version ]]; then
         die 2 $"Could not find module source directory." \
             $"Directory: $source_tree/$module-$module_version does not exist."
-    fi
-
-    # Do stuff for --rpm_safe_upgrade
-    if [[ $rpm_safe_upgrade ]]; then
-        local pppid=$(awk '/PPid:/ {print $2}' /proc/$PPID/status)
-        local lock_name=$(mktemp_or_die $tmp_location/dkms_rpm_safe_upgrade_lock.$pppid.XXXXXX)
-        echo "$module-$module_version" >> $lock_name
-        ps -o lstart --no-headers -p $pppid 2>/dev/null >> $lock_name
     fi
 
     # Check the conf file for sanity
@@ -1304,7 +1307,7 @@ prepare_build()
 
     # Error out if build_exclude is set
     [[ $build_exclude ]] && die 9 \
-        $" The dkms.conf for this module includes a BUILD_EXCLUSIVE directive which" \
+        $" The $base_dir/dkms.conf for module $module includes a BUILD_EXCLUSIVE directive which" \
         $"does not match this kernel/arch.  This indicates that it should not be built."
 
     # Error out if source_tree is basically empty (binary-only dkms tarball w/ --force check)
@@ -1435,6 +1438,13 @@ sign_build()
 
 build_module()
 {
+    local buildable=0
+    for ((count=0; count < ${#built_module_name[@]}; count++)); do
+        check_version_sanity "$kernelver" "$arch" "$obsolete_by" "${dest_module_name[$count]}" || continue
+        ((buildable++))
+    done
+    ((buildable!=0)) || exit 0
+
     prepare_build
     do_build
     sign_build
@@ -1524,7 +1534,7 @@ install_module()
             $"You may override by specifying --force."
     fi
     local m=${dest_module_name[$count]}
-    local installed_modules=$(find_module "$lib_tree" "$m" | grep -v "$lib_tree/kernel/")
+    local installed_modules=$(find_module "$lib_tree" "$m")
     local module_count=${#installed_modules[@]}
     echo $" - Original module"
     local original_copy=$(compressed_or_uncompressed "$dkms_tree/$module/original_module/$kernelver/$arch" "$m")
@@ -1885,6 +1895,28 @@ do_uninstall()
     echo $"DKMS: uninstall completed."
 }
 
+module_is_added_or_die()
+{
+    is_module_added "$module" "$module_version" || die 3 \
+        $"The module/version combo: $module-$module_version" \
+        $"is not located in the DKMS tree."
+}
+
+module_is_built_or_die()
+{
+    is_module_built "$module" "$module_version" "$1" "$2" || die 4 \
+        $"There is no instance of $module $module_version" \
+        $"for kernel $1 ($2) located in the DKMS tree."
+
+}
+
+module_is_installed_or_die()
+{
+    is_module_installed "$module" "$module_version" "$1" "$2" || die 4 \
+        $"The module $module $module_version is not currently installed." \
+        $"This module is not currently ACTIVE for kernel $1 ($2)."
+}
+
 # Check our preconditions, and then let do_install do all the hard work.
 uninstall_module()
 {
@@ -1892,73 +1924,76 @@ uninstall_module()
     check_module_args uninstall
 
     # Check that $module is in the dkms tree
-    [[ -d $dkms_tree/$module ]] || die 2 \
-        $"There are no instances of module: $module" \
-        $"located in the DKMS tree."
+    module_is_added_or_die
 
-    # Make sure that its installed in the first place
-    [[ -d $dkms_tree/$module/$module_version ]] || die 3 \
-        $"The module/version combo: $module-$module_version" \
-        $"is not located in the DKMS tree."
+    local i
+    for ((i=0; i < ${#kernelver[@]}; i++)); do
+        # Only do stuff if module/module version is currently installed
+        module_is_installed_or_die "${kernelver[$i]}" "${arch[$i]}"
+        do_uninstall "${kernelver[$i]}" "${arch[$i]}"
+    done
+}
 
-    # Read the conf file
-    read_conf_or_die "$kernelver" "$arch"
+do_unbuild()
+{
+    # Delete or "unbuild" the $kernel_version/$arch_used part of the tree
+    rm -rf "$dkms_tree/$module/$module_version/$1/$2"
+    [[ $(find $dkms_tree/$module/$module_version/$1/* -maxdepth 0 -type d 2>/dev/null) ]] || \
+        rm -rf "$dkms_tree/$module/$module_version/$1"
+}
 
-    # Only do stuff if module/module version is currently installed
-    local kernel_symlink=$(readlink -f "$dkms_tree/$module/kernel-$kernelver-$arch")
-    [[ $kernel_symlink = $dkms_tree/$module/$module_version/$kernelver/$arch ]] || die 5 \
-        $"The module $module $module_version is not currently installed." \
-        $"This module is not currently ACTIVE for kernel $kernelver ($arch)."
-    do_uninstall "$kernelver" "$arch"
+# Remove the build module, w/o removing/unregistering it.
+# This uninstalls any installed modules along the way
+unbuild_module()
+{
+    # Check that the right arguments were passed
+    check_module_args unbuild
+
+    # Check that $module is in the dkms tree
+    module_is_added_or_die
+
+    local i
+    for ((i=0; i < ${#kernelver[@]}; i++)); do
+        # Only do stuff if module/module version is currently built
+        module_is_built_or_die "${kernelver[$i]}" "${arch[$i]}"
+
+        do_uninstall "${kernelver[$i]}" "${arch[$i]}"
+
+        do_unbuild "${kernelver[$i]}" "${arch[$i]}"
+    done
 }
 
 # Unregister a DKMS module.  This uninstalls any installed modules along the way.
 remove_module()
 {
     # Check that the right arguments were passed
-    if [[ ! ($module && $module_version) || $kernels_arches_default  ]]; then
-        die 1 $"Invalid number of parameters passed." \
-            $"Usage: remove <module>/<module-version> --all" \
-            $"   or: remove <module>/<module-version> -k <kernel-version>"
+    check_module_args remove
+
+    # Do --rpm_safe_upgrade check (exit out and don't do remove if inter-release RPM upgrade scenario occurs)
+    if [[ $rpm_safe_upgrade ]]; then
+        local pppid=$(awk '/PPid:/ {print $2}' /proc/$PPID/status)
+        local time_stamp=$(ps -o lstart --no-headers -p $pppid 2>/dev/null)
+        for lock_file in $tmp_location/dkms_rpm_safe_upgrade_lock.$pppid.*; do
+            [[ -f $lock_file ]] || continue
+            lock_head=$(head -n 1 $lock_file 2>/dev/null)
+            lock_tail=$(tail -n 1 $lock_file 2>/dev/null)
+            [[ $lock_head = $module-$module_version && $time_stamp && $lock_tail = $time_stamp ]] || continue
+            rm -f $lock_file
+            die 0 $"DKMS: Remove cancelled because --rpm_safe_upgrade scenario detected."
+        done
     fi
 
     # Check that $module is in the dkms tree
-    if ! [[ -d $dkms_tree/$module/$module_version ]]; then
-        die 3 $"There are no instances of module: $module" \
-            $"$module_version located in the DKMS tree."
-    fi
+    module_is_added_or_die
 
     local i
     for ((i=0; i < ${#kernelver[@]}; i++)); do
         # Make sure its there first before removing
-        if ! [[ -d $dkms_tree/$module/$module_version/${kernelver[$i]}/${arch[$i]} ]]; then
-            die 4 $"There is no instance of $module $module_version" \
-            $"for kernel ${kernelver[$i]} (${arch[$i]}) located in the DKMS tree."
-        fi
-
-        # Do --rpm_safe_upgrade check (exit out and don't do remove if inter-release RPM upgrade scenario occurs)
-        if [[ $rpm_safe_upgrade ]]; then
-            local pppid=$(awk '/PPid:/ {print $2}' /proc/$PPID/status)
-            local time_stamp=$(ps -o lstart --no-headers -p $pppid 2>/dev/null)
-            for lock_file in $tmp_location/dkms_rpm_safe_upgrade_lock.$pppid.*; do
-                [[ -f $lock_file ]] || continue
-                lock_head=$(head -n 1 $lock_file 2>/dev/null)
-                lock_tail=$(tail -n 1 $lock_file 2>/dev/null)
-                [[ $lock_head = $module-$module_version && $time_stamp && $lock_tail = $time_stamp ]] || continue
-                rm -f $lock_file
-                die 0 $"DKMS: Remove cancelled because --rpm_safe_upgrade scenario detected."
-            done
-        fi
-
-        # Read the conf file
-        read_conf_or_die "${kernelver[$i]}" "${arch[$i]}"
+        module_is_built_or_die "${kernelver[$i]}" "${arch[$i]}"
 
         do_uninstall "${kernelver[$i]}" "${arch[$i]}"
 
-        # Delete the $kernel_version/$arch_used part of the tree
-        rm -rf "$dkms_tree/$module/$module_version/${kernelver[$i]}/${arch[$i]}"
-        [[ $(find $dkms_tree/$module/$module_version/${kernelver[$i]}/* -maxdepth 0 -type d 2>/dev/null) ]] || \
-            rm -rf "$dkms_tree/$module/$module_version/${kernelver[$i]}"
+        do_unbuild "${kernelver[$i]}" "${arch[$i]}"
     done
 
     # Delete the $module_version part of the tree if no other $module_version/$kernel_version dirs exist
@@ -3643,7 +3678,7 @@ die_is_fatal="yes"
 [ -x /usr/lib/module-init-tools/weak-modules ] && weak_modules='/usr/lib/module-init-tools/weak-modules'
 no_depmod=""
 
-action_re='^(remove|(auto|un)?install|match|mk(driverdisk|tarball|rpm|deb|bmdeb|dsc|kmp)|build|add|status|ldtarball)$'
+action_re='^(remove|(auto|un)?install|match|mk(driverdisk|tarball|rpm|deb|bmdeb|dsc|kmp)|(un)?build|add|status|ldtarball)$'
 
 # Parse command line arguments
 while (($# > 0)); do
@@ -3839,26 +3874,29 @@ for action_to_run in $action; do
     remove)
         check_root && remove_module
         ;;
+    unbuild)
+        check_root && unbuild_module
+        ;;
     install)
-        check_root && install_modules
+        check_root && check_all_is_banned "install" && install_modules
         ;;
     autoinstall)
         check_root && autoinstall
         ;;
     match)
-        check_root && have_one_kernel && run_match
+        check_root && have_one_kernel "match" && run_match
         ;;
     uninstall)
-        check_root && have_one_kernel && uninstall_module
+        check_root && uninstall_module
         ;;
     mkdriverdisk)
         check_root && make_driver_disk
         ;;
     build)
-        build_modules
+        check_root && check_all_is_banned "build" && build_modules
         ;;
     add)
-        add_module
+        check_root && check_all_is_banned "add" && add_module
         ;;
     mktarball)
         make_tarball
@@ -3876,7 +3914,7 @@ for action_to_run in $action; do
         make_debian "dsc"
         ;;
     mkkmp)
-        have_one_kernel && make_kmp
+        have_one_kernel "mkkmp" && make_kmp
         ;;
     status)
         show_status

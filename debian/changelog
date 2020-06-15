@@ -1,3 +1,15 @@
+dkms (2.8.2-1) unstable; urgency=medium
+
+  * New upstream version 2.8.2
+  * Drop verboselog patch: upstreamed
+  * Refresh do-not-load-modules patch
+  * Bump std-version to 4.5.0
+  * Bump debhelper compat level to 13
+  * Bump watch file version to 4
+  * Add upstream proposed patch to close Debian bug 956245. (Closes: #956245)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 15 Jun 2020 11:21:01 +0200
+
 dkms (2.8.1-5) unstable; urgency=medium
 
   * Team upload.
