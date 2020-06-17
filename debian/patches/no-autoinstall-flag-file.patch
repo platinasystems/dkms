@@ -1,0 +1,39 @@
+Author: Andreas Beckmann <anbe@debian.org>
+Description: use /etc/dkms/no-autoinstall as flag file to disable autoinstall
+ intended use: autopkgtests should not fail while installing *-dkms
+ or linux-headers-* without detailed error reporting
+ instead they can run the invidiual steps with verbose error reporting
+
+--- a/dkms_autoinstaller
++++ b/dkms_autoinstaller
+@@ -45,9 +45,13 @@ case "$1" in
+ 		else
+ 			kernel=`uname -r`
+ 		fi
+-		log_daemon_msg "$prog: running auto installation service for kernel $kernel"
+-		dkms autoinstall --kernelver $kernel
+-		log_end_msg $?
++		if [ -f /etc/dkms/no-autoinstall ]; then
++			log_daemon_msg "$prog: autoinstall for dkms modules has been disabled"
++		else
++			log_daemon_msg "$prog: running auto installation service for kernel $kernel"
++			dkms autoinstall --kernelver $kernel
++			log_end_msg $?
++		fi
+ 		;;
+ 	stop|restart|force-reload|status|reload)
+ 		# There is no stop action, this and the 04 priority during stop is
+--- a/dkms_common.postinst
++++ b/dkms_common.postinst
+@@ -149,6 +149,11 @@ if [ -z "$NAME" ] || [ -z "$VERSION" ];
+     exit 1
+ fi
+ 
++if [ -f /etc/dkms/no-autoinstall ]; then
++    echo "autoinstall for dkms modules has been disabled."
++    exit 0
++fi
++
+ # read framework configuration options
+ if [ -r /etc/dkms/framework.conf ]; then
+     . /etc/dkms/framework.conf

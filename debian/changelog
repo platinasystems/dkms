@@ -1,3 +1,19 @@
+dkms (2.8.2-2) unstable; urgency=medium
+
+  [ Gianfranco Costamagna ]
+  * Tweak previous patch to do bash string comparison (Closes: #956245)
+    thanks Thorsten Glaser for the reminder!
+
+  [ Andreas Beckmann ]
+  * use /etc/dkms/no-autoinstall as flag file to disable autoinstall
+  * improve dkms-autopkgtest (Closes: #959910)
+
+  [ Seth Forshee ]
+  * Cherry-pick upstream fix for dkms failure with signed kernel modules
+    - debian/patches/885f8275aa65fb11be1e17bc28a0b0ea734dc585.patch:
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Wed, 17 Jun 2020 10:00:12 +0200
+
 dkms (2.8.2-1) unstable; urgency=medium
 
   * New upstream version 2.8.2
