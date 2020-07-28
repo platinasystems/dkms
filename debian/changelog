@@ -1,3 +1,14 @@
+dkms (2.8.3-1) unstable; urgency=medium
+
+  * New upstream version 2.8.3
+  * Drop patches:
+    - 130,
+    - no-autoinstall-flag-file,
+    - 885f8275aa65fb11be1e17bc28a0b0ea734dc585: upstream
+  * Refresh patch do-not-load-modules
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Tue, 28 Jul 2020 18:44:36 +0200
+
 dkms (2.8.2-2) unstable; urgency=medium
 
   [ Gianfranco Costamagna ]

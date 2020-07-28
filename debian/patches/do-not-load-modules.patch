@@ -14,7 +14,7 @@ Origin: https://github.com/dell/dkms/pull/27
 
 --- a/dkms
 +++ b/dkms
-@@ -1639,12 +1639,6 @@ install_module()
+@@ -1632,12 +1632,6 @@ install_module()
              exit 6
      }
  
