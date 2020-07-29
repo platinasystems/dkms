@@ -1,3 +1,17 @@
+dkms (2.8.3-2) unstable; urgency=medium
+
+  * tweak dkms-autopkgtest script to avoid cases where some files called "dkms.conf"
+    are stored somewhere else (e.g. /etc).
+    This fixes e.g.
+    dpkg -L broadcom-sta-dkms |grep "dkms.conf"
+    /etc/modprobe.d/broadcom-sta-dkms.conf
+    /usr/src/broadcom-sta-6.30.223.271/dkms.conf
+    and others (8168-dkms) (Closes: #959910)
+  * Make copyright file machine readable and add myself to it
+  * Add R^3: no
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Wed, 29 Jul 2020 09:28:05 +0200
+
 dkms (2.8.3-1) unstable; urgency=medium
 
   * New upstream version 2.8.3

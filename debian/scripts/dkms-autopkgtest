@@ -25,7 +25,7 @@ run_pkg() {
     # Try and remove dkms to spot packages which miss a dkms dependency
     dpkg --remove dkms || true
 
-    if ! dkms_conf=$(dpkg -L $pkg | grep 'dkms.conf$'); then
+    if ! dkms_conf=$(dpkg -L $pkg | grep '/usr/src' | grep '/dkms.conf$'); then
         echo "I: Package $pkg has no dkms.conf, skipping"
         return
     fi
