@@ -1,3 +1,9 @@
+dkms (2.8.3-3) unstable; urgency=medium
+
+  * dynamically generate breaks for shim-signed in Ubuntu and Derivates
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Wed, 29 Jul 2020 10:30:50 +0200
+
 dkms (2.8.3-2) unstable; urgency=medium
 
   * tweak dkms-autopkgtest script to avoid cases where some files called "dkms.conf"

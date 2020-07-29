@@ -17,3 +17,11 @@ override_dh_auto_build:
 override_dh_install:
 	$(MAKE) install-debian DESTDIR=$(CURDIR)/debian/dkms
 	dh_install
+
+override_dh_gencontrol:
+ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
+	dh_gencontrol -- \
+		-Vdkms:Breaks="shim-signed (<< 1.34~)"
+else
+	dh_gencontrol
+endif
