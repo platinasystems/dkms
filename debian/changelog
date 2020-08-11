@@ -1,3 +1,10 @@
+dkms (2.8.3-4) unstable; urgency=medium
+
+  * Silently source dkms.conf files, to help iptables-netflow work
+    in autopkgtests (Addresses: #966483)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Tue, 11 Aug 2020 12:03:25 +0200
+
 dkms (2.8.3-3) unstable; urgency=medium
 
   * dynamically generate breaks for shim-signed in Ubuntu and Derivates

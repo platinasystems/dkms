@@ -32,8 +32,8 @@ run_pkg() {
 
     echo "I: Testing binary package $pkg"
 
-    dkms_pkg=$(bash -c ". $dkms_conf; echo \$PACKAGE_NAME" 2>/dev/null)
-    dkms_ver=$(bash -c ". $dkms_conf; echo \$PACKAGE_VERSION" 2>/dev/null)
+    dkms_pkg=$(bash -c ". $dkms_conf > /dev/null; echo \$PACKAGE_NAME" 2>/dev/null)
+    dkms_ver=$(bash -c ". $dkms_conf > /dev/null; echo \$PACKAGE_VERSION" 2>/dev/null)
 
     for k in /lib/modules/*/build
     do
