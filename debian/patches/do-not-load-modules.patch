@@ -12,9 +12,11 @@ Origin: https://github.com/dell/dkms/pull/27
  dkms | 6 ------
  1 file changed, 6 deletions(-)
 
---- a/dkms
-+++ b/dkms
-@@ -1632,12 +1632,6 @@ install_module()
+Index: dkms/dkms
+===================================================================
+--- dkms.orig/dkms
++++ dkms/dkms
+@@ -1636,12 +1636,6 @@ install_module()
              exit 6
      }
  

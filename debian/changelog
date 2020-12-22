@@ -1,3 +1,14 @@
+dkms (2.8.4-1) unstable; urgency=medium
+
+  [ Debian Janitor ]
+  * Fix day-of-week for changelog entry 2.0.17.5-0ubuntu1.
+
+  [ Aron Xu ]
+  * New upstream version 2.8.4
+  * Refresh patch do-not-load-module.patch
+
+ -- Aron Xu <aron@debian.org>  Tue, 22 Dec 2020 14:32:22 +0800
+
 dkms (2.8.3-4) unstable; urgency=medium
 
   * Silently source dkms.conf files, to help iptables-netflow work
@@ -852,7 +863,7 @@ dkms (2.0.17.5-0ubuntu1) hardy; urgency=low
     - uninstall from /extra before DEST_MODULE_LOCATION
     - Run depmod after uninstall
 
- -- Matt Domsch <Matt_Domsch@dell.com>  Mon, 10 Oct 2007 16:50:00 -0500
+ -- Matt Domsch <Matt_Domsch@dell.com>  Wed, 10 Oct 2007 16:50:00 -0500
 
 dkms (2.0.17.4-0ubuntu1) gutsy; urgency=low
 

@@ -210,6 +210,7 @@ set_module_suffix()
     [[ $(VER $kernel_test) < $(VER 2.5) ]] && module_uncompressed_suffix=".o"
     grep -q '\.gz:' /lib/modules/$kernel_test/modules.dep 2>/dev/null && module_compressed_suffix=".gz"
     grep -q '\.xz:' /lib/modules/$kernel_test/modules.dep 2>/dev/null && module_compressed_suffix=".xz"
+    grep -q '\.zst:' /lib/modules/$kernel_test/modules.dep 2>/dev/null && module_compressed_suffix=".zst"
     module_suffix="$module_uncompressed_suffix$module_compressed_suffix"
 }
 
@@ -1003,7 +1004,7 @@ moduleconfig_remove()
 
 etc_sysconfig_kernel_modify()
 (
-    [[ -e /etc/sysconfig/kernel && $remake_initrd ]] || return 0
+    [[ -f /etc/sysconfig/kernel && $remake_initrd ]] || return 0
 
     # Make a temp directory to store files
     local temp_dir_name=$(mktemp_or_die -d $tmp_location/dkms.XXXXXX)
@@ -1360,7 +1361,8 @@ do_build()
         [[ -e ${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix ]] && continue
         report_build_problem 7 \
             $" Build of ${built_module_name[$count]}$module_uncompressed_suffix failed for: $kernelver ($arch)" \
-            $"Consult the make.log in the build directory" \
+            $"Make sure the name of the generated module is correct and at the root of the" \
+            $"build directory, or consult make.log in the build directory" \
             $"$dkms_tree/$module/$module_version/build/ for more information."
     done
     cd - >/dev/null
@@ -1383,6 +1385,8 @@ do_build()
             gzip -9f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
         elif [ "$module_compressed_suffix" = ".xz" ]; then
             xz -f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
+        elif [ "$module_compressed_suffix" = ".zst" ]; then
+            zstd -q -f -T0 -20 --ultra "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_uncompressed_suffix"
         fi
         cp -f "$dkms_tree/$module/$module_version/build/${built_module_location[$count]}${built_module_name[$count]}$module_suffix" \
             "$base_dir/module/${dest_module_name[$count]}$module_suffix" >/dev/null
@@ -1823,7 +1827,7 @@ do_uninstall()
         while [ "${dir_to_remove}" != "${dir_to_remove#/}" ]; do
             dir_to_remove="${dir_to_remove#/}"
         done
-        (cd "$install_tree/$1" && rmdir -p --ignore-fail-on-non-empty "${dir_to_remove}" || true)
+        (if cd "$install_tree/$1"; then rpm -qf "${dir_to_remove}" >/dev/null 2>&1 || rmdir -p --ignore-fail-on-non-empty "${dir_to_remove}"; fi || true)
         echo $" - Original module"
         local origmod=$(compressed_or_uncompressed "$dkms_tree/$module/original_module/$1/$2" "${dest_module_name[$count]}")
         if [[ -n "$origmod" ]]; then
@@ -3886,7 +3890,8 @@ for action_to_run in $action; do
         check_root && make_driver_disk
         ;;
     build)
-        check_root && check_all_is_banned "build" && build_modules
+        [ ! -w "$dkms_tree" ] && die 1 $"No write access to create a DKMS tree at ${dkms_tree}"
+        check_all_is_banned "build" && build_modules
         ;;
     add)
         check_root && check_all_is_banned "add" && add_module
