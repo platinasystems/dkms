@@ -107,7 +107,7 @@ run_pkg() {
 # (This only works if the *-dkms package is not yet installed.)
 touch /etc/dkms/no-autoinstall
 
-for pkg in $(awk '/^Package:/ { print $2 }' debian/control | grep "\-dkms$"); do
+for pkg in $(grep-dctrl -FDepends -e '(^| )dkms' -o -FPackage -e '\-dkms' debian/control -sPackage -n); do
     # package might be arch: restriction or udeb etc.
     if ! apt-cache show $pkg >/dev/null 2>&1; then
         echo "I: Skipping unavailable package $pkg"

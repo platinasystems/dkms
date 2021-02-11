@@ -1,3 +1,17 @@
+dkms (2.8.4-2) unstable; urgency=medium
+
+  [ Gianfranco Costamagna ]
+  * Team upload
+
+  [ Andreas Beckmann ]
+  * Add Provides: dh-sequence-dkms to help reverse-dependencies use it. (Closes: #981395)
+
+  [ Marcelo Henrique Cerri ]
+  * dkms-autopkgtest: Also select binary packages that depends on dkms for testing (LP: #1915051)
+    Closes: #982315
+
+ -- Marcelo Henrique Cerri <marcelo.cerri@canonical.com>  Thu, 11 Feb 2021 11:56:32 -0300
+
 dkms (2.8.4-1) unstable; urgency=medium
 
   [ Debian Janitor ]
