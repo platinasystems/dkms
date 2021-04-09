@@ -1,3 +1,10 @@
+dkms (2.8.4-4) unstable; urgency=medium
+
+  * debian/patches/149.patch:
+    - upstream proposed patch to fix wrong bash interpreter (Closes: #986674)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Fri, 09 Apr 2021 14:28:48 +0200
+
 dkms (2.8.4-3) unstable; urgency=medium
 
   [ Gianfranco Costamagna ]
