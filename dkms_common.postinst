@@ -6,6 +6,8 @@
 
 set -e
 
+. /usr/share/debconf/confmodule
+
 uname_s=$(uname -s)
 
 _get_kernel_dir() {
@@ -33,6 +35,7 @@ _is_kernel_name_correct() {
     KERNEL_NAME=$1
 
     for kernel in /boot/config-*; do
+        [ -f "$kernel" ] || continue
         KERNEL=${kernel#*-}
         if [ "${KERNEL}" = "${KERNEL_NAME}" ]; then
             CORRECT="yes"
