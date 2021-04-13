@@ -1438,13 +1438,6 @@ sign_build()
 
 build_module()
 {
-    local buildable=0
-    for ((count=0; count < ${#built_module_name[@]}; count++)); do
-        check_version_sanity "$kernelver" "$arch" "$obsolete_by" "${dest_module_name[$count]}" || continue
-        ((buildable++))
-    done
-    ((buildable!=0)) || exit 0
-
     prepare_build
     do_build
     sign_build
@@ -3023,7 +3016,7 @@ debian_install()
     done
     # if they are already installed, we are OK.
     [[ ${package[@]} ]] || return
-    if ((UID != 0)); then
+    if [[ $(id -u) != 0 ]]; then
         # figure out how to get root
         for getroot in su-to-root gksudo kdesu sudo; do
             which $getroot >/dev/null 2>&1 || continue
@@ -3265,7 +3258,7 @@ parse_moduleversion(){
 }
 
 check_root() {
-    ((UID == 0)) && return
+    [[ $(id -u) = 0 ]] && return
     die 1 $"You must be root to use this command."
 }
 
@@ -3920,7 +3913,7 @@ for action_to_run in $action; do
         show_status
         ;;
     ldtarball) # Make sure they're root if we're using --force
-        if ((UID != 0)) && [[ $force = true ]]; then
+        if [[ $(id -u) != 0 ]] && [[ $force = true ]]; then
             die 1 $"You must be root to use this command with the --force option."
         fi
         load_tarball && add_module
