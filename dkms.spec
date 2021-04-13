@@ -1,16 +1,10 @@
-%if 0%{?rhel} == 5
-%define _sharedstatedir /var/lib
-%endif
-
 Summary: Dynamic Kernel Module Support Framework
 Name: dkms
 Version: [INSERT_VERSION_HERE]
 Release: 1%{?dist}
 License: GPLv2+
-Group: System Environment/Base
 BuildArch: noarch
 URL: https://github.com/dell/dkms
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Source0: http://linux.dell.com/dkms/permalink/dkms-%{version}.tar.gz
 # because Mandriva calls this package dkms-minimal
 Provides: dkms-minimal = %{version}
@@ -28,13 +22,13 @@ Requires: tar
 Requires: which
 Requires: bash > 1.99
 
-%if 0%{?fedora} || 0%{?rhel} >= 7
+%if 0%{?fedora} || 0%{?rhel} >= 7 || 0%{?suse_version} >= 1210
 Requires:       kmod
 %else
 Requires:       module-init-tools
 %endif
 
-%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7
+%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7 || 0%{?suse_version} >= 1210
 BuildRequires:          systemd
 Requires(post):         systemd
 Requires(preun):        systemd
@@ -48,6 +42,11 @@ Requires(postun):       /sbin/service
 
 %if 0%{?fedora}
 Requires: kernel-devel
+%endif
+
+%if 0%{?suse_version} >= 1210
+BuildRequires: systemd-rpm-macros
+%{?systemd_requires}
 %endif
 
 %description
@@ -110,7 +109,7 @@ echo ""
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7
+%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7 || 0%{?suse_version} >= 1210
 make install-redhat-systemd DESTDIR=$RPM_BUILD_ROOT \
     SBIN=$RPM_BUILD_ROOT%{_sbindir} \
     VAR=$RPM_BUILD_ROOT%{_localstatedir}/lib/%{name} \
@@ -131,10 +130,10 @@ make install-redhat-sysv DESTDIR=$RPM_BUILD_ROOT \
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7
+%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7 || 0%{?suse_version} >= 1210
 
 %post
-%systemd_post %{name}.service
+systemctl enable %{name}.service>/dev/null 2>&1
 
 %preun
 if [ $1 -eq 0 ]; then
@@ -163,8 +162,8 @@ fi
 
 %files
 %defattr(-,root,root)
-%doc sample.spec sample.conf AUTHORS COPYING README.dkms
-%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7
+%doc sample.spec sample.conf AUTHORS COPYING README.md
+%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7 || 0%{?suse_version} >= 1210
 %{_unitdir}/%{name}.service
 %else
 %{_initrddir}/%{name}_autoinstaller

@@ -53,6 +53,7 @@ _get_newest_kernel_debian() {
     NEWEST_ABI=
 
     for kernel in /boot/config-*; do
+        [ -f "$kernel" ] || continue
         KERNEL=${kernel#*-}
         KERNEL_VERSION=${KERNEL%%-*}
         ABI=${KERNEL#*-}
@@ -67,7 +68,7 @@ _get_newest_kernel_debian() {
         fi
 
         # if $kernel is greater than $COMPARE_TO
-        if [ `dpkg --compare-versions "$KERNEL_VERSION-$ABI" gt "$COMPARE_TO" && echo "yes" || \
+        if [ `dpkg --compare-versions "$KERNEL_VERSION-$ABI" ge "$COMPARE_TO" && echo "yes" || \
               echo "no"` = "yes" ]; then
             NEWEST_KERNEL=$KERNEL
             NEWEST_VERSION=$KERNEL_VERSION
@@ -113,7 +114,6 @@ get_newest_kernel() {
     # Try Debian first as rpm can be installed in Debian based distros
     if [ -e /usr/bin/dpkg ]; then
         # If DEB based
-        CURRENT_KERNEL=$1
         CURRENT_VERSION=${CURRENT_KERNEL%%-*}
         CURRENT_ABI=${CURRENT_KERNEL#*-}
         CURRENT_FLAVOUR=${CURRENT_ABI#*-}
@@ -198,7 +198,7 @@ fi
 # Here we look for the most recent kernel so that we can
 # build the module for it (in addition to doing it for the
 # current kernel.
-NEWEST_KERNEL=$(get_newest_kernel "$KERNELS")
+NEWEST_KERNEL=$(get_newest_kernel)
 
 if [ -z "$autoinstall_all_kernels" ]; then
     # If the current kernel is installed on the system or chroot
