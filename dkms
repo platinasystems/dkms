@@ -742,7 +742,7 @@ read_conf()
 
 # Little helper function for parsing the output of modinfo.
 get_module_verinfo(){
-    res=()
+    res=("" "" "")
     local vals=
     while read -a vals; do
     case ${vals[0]} in
@@ -822,7 +822,8 @@ check_version_sanity()
         kernels_info[1]=${kernels_info[2]}
     fi
 
-    if [[ ${kernels_info[1]} && ${dkms_info[1]} && ${kernels_info[1]} = ${dkms_info[1]} && ! $force ]]; then
+    if [[ ${kernels_info[1]} && ${dkms_info[1]} && ${kernels_info[1]} = ${dkms_info[1]} &&
+	  -n "${kernels_info[0]}" && -n "${dkms_info[0]}" && ${kernels_info[0]} = ${dkms_info[0]} && ! $force ]]; then
         echo $"" >&2
         echo $"Good news! Module version $dkms_info for ${4}$module_suffix" >&2
         echo $"exactly matches what is already found in kernel $1." >&2
@@ -1460,7 +1461,7 @@ install_module()
             $"You may override by specifying --force."
     fi
     local m=${dest_module_name[$count]}
-    local installed_modules=$(find_module "$lib_tree" "$m")
+    local installed_modules=$(find_module "$lib_tree" "$m" | grep -v "$lib_tree/kernel/")
     local module_count=${#installed_modules[@]}
     echo $" - Original module"
     local original_copy=$(compressed_or_uncompressed "$dkms_tree/$module/original_module/$kernelver/$arch" "$m")
@@ -1756,7 +1757,7 @@ do_uninstall()
         while [ "${dir_to_remove}" != "${dir_to_remove#/}" ]; do
             dir_to_remove="${dir_to_remove#/}"
         done
-        (cd "$install_tree/$1" && rm -rf "${dir_to_remove}/*" && rmdir -p "${dir_to_remove}" || true)
+        (cd "$install_tree/$1" && rmdir --parents --ignore-fail-on-non-empty "${dir_to_remove}" || true)
         echo $" - Original module"
         local origmod=$(compressed_or_uncompressed "$dkms_tree/$module/original_module/$1/$2" "${dest_module_name[$count]}")
         if [[ -n "$origmod" ]]; then
@@ -1781,9 +1782,7 @@ do_uninstall()
             fi
         fi
     done
-    rm -rf "$dkms_tree/$module/kernel-$1-$2"
-    #Remove modules from dkms built tree
-    rm -rf "$dkms_tree/$module/$module_version/$1"
+    rm -f "$dkms_tree/$module/kernel-$1-$2"
     else
         echo $""
         echo $"Status: This module version was INACTIVE for this kernel."
